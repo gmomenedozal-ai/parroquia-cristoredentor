@@ -338,6 +338,7 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     </div>
     <div class="btn-row" style="margin:0">
       <button class="btn btn-warn" onclick="exportarDatos()">⬇️ Respaldar JSON</button>
+      <button class="btn btn-p" onclick="migrarTodoASheets()" style="background:#1a73e8;border-color:#1a73e8" title="Solo la primera vez: sube todos los datos actuales a Google Sheets">☁️ Migrar todo a Sheets</button>
       <button class="btn btn-warn" onclick="exportarExcel()" style="background:#e8f4ed;color:#1a5c3a;border-color:#c3e6d1">📊 Exportar Excel</button>
       <button class="btn btn-p" onclick="exportarHTMLConDatos()" title="Genera un HTML con todos los datos incluidos para compartir">🌐 Generar HTML para compartir</button>
       <button class="btn btn-s" onclick="importarDatos()">⬆️ Importar datos</button>
@@ -568,6 +569,67 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
 // CONSTANTES
 // ================================================================
 const STORAGE_KEY = 'parroquia2026_v2';
+
+// ── Conexión con Google Sheets (base de datos real) ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbzQswbeO-32tWtYb_v8WVjAHI-WE5VZ46vbwA0hQjotB0mK-iAn6ozynN53t_Roh1Ys/exec';
+let sheetsDisponible = false;
+
+async function cargarDesdeSheets() {
+  try {
+    const resp = await fetch(API_URL);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data && data.saldos && data.gastos && Object.keys(data.saldos).length > 0) {
+      DATA = data;
+      sheetsDisponible = true;
+      return true;
+    }
+    // Sheet vacío todavía (antes de migrar) — seguir usando datos locales
+    sheetsDisponible = true;
+    return false;
+  } catch (err) {
+    console.log('No se pudo conectar a Google Sheets, usando datos locales:', err);
+    sheetsDisponible = false;
+    return false;
+  }
+}
+
+async function guardarEnSheets(mes, saldo, gastosArr) {
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion: 'guardarMes', mes, saldo, gastos: gastosArr })
+    });
+    const r = await resp.json();
+    return !!r.ok;
+  } catch (err) {
+    console.log('Error guardando en Sheets:', err);
+    return false;
+  }
+}
+
+async function migrarTodoASheets() {
+  if (!confirm('Esto sobrescribirá TODO el contenido del Google Sheet con los datos actuales de esta app (' + DATA.gastos.length + ' registros). ¿Continuar?')) return;
+  showNotif('notif-reg', '⏳ Migrando datos a Google Sheets...', 'ok');
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ accion: 'migrarTodo', saldos: DATA.saldos, gastos: DATA.gastos })
+    });
+    const r = await resp.json();
+    if (r.ok) {
+      sheetsDisponible = true;
+      showNotif('notif-reg', `✓ Migración completa — ${r.migrados} registros guardados en Google Sheets`, 'ok');
+    } else {
+      showNotif('notif-reg', '✗ Error en la migración: ' + (r.error||''), 'err');
+    }
+  } catch (err) {
+    showNotif('notif-reg', '✗ Error de conexión: ' + err.message, 'err');
+  }
+}
+
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MESES3 = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
@@ -1234,7 +1296,7 @@ function cargarDatosMesReg(m) {
   actualizarTotal();
 }
 
-function guardarMes() {
+async function guardarMes() {
   const rows = [...$('ing-rows').querySelectorAll('.ing-row')];
   const ini  = parseFloat($('sf-ini').value)||0;
   const ing  = parseFloat($('sf-ing').value)||0;
@@ -1273,11 +1335,12 @@ function guardarMes() {
   });
 
   guardarStorage();
+  const guardadoOk = await guardarEnSheets(mesReg, haySaldo ? {ini,ing,egr,fin,prom} : null, DATA.gastos.filter(g=>g.mes===mesReg));
   const ts = new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'});
-  $('ultimo-guardado').textContent = `Guardado a las ${ts}`;
+  $('ultimo-guardado').textContent = `Guardado a las ${ts}` + (guardadoOk ? ' · ☁️ Sincronizado' : ' · ⚠️ Solo local (revise su conexión)');
   refrescarTodo();
   const nGastos = DATA.gastos.filter(g=>g.mes===mesReg).length;
-  showNotif('notif-reg',`✓ ${MESES[mesReg]} guardado correctamente — ${nGastos} registro(s)${haySaldo?' + estado de cuenta':''}.`,'ok');
+  showNotif('notif-reg',`✓ ${MESES[mesReg]} guardado correctamente — ${nGastos} registro(s)${haySaldo?' + estado de cuenta':''}${guardadoOk?' — ☁️ Sincronizado con Google Sheets':' — ⚠️ No se pudo sincronizar, solo guardado localmente'}.`,guardadoOk?'ok':'warn');
   // Reconstruir meses en tabs de dashboard
   buildMesPills();
   renderDash();
@@ -2172,7 +2235,8 @@ function showSec(id) {
 // ================================================================
 // INIT
 // ================================================================
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async ()=>{
+  const sheetsOk = await cargarDesdeSheets();
   cargarExtras();
   renderRecurrentes();
   buildMesPills();
@@ -2189,6 +2253,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   cargarDatosMesReg(sigMes);
   // Iniciar en Resumen (no en Registrar — requiere clave)
   showSec('resumen');
+  if (sheetsOk) {
+    console.log('✓ Datos cargados desde Google Sheets');
+  } else {
+    console.log('⚠️ Usando datos locales (Sheets vacío o sin conexión)');
+  }
 });
 // ================================================================
 // AUTENTICACIÓN ADMINISTRADOR
