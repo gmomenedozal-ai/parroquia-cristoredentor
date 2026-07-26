@@ -339,6 +339,7 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <div class="btn-row" style="margin:0">
       <button class="btn btn-warn" onclick="exportarDatos()">⬇️ Respaldar JSON</button>
       <button class="btn btn-p" onclick="migrarTodoASheets()" style="background:#1a73e8;border-color:#1a73e8" title="Solo la primera vez: sube todos los datos actuales a Google Sheets">☁️ Migrar todo a Sheets</button>
+      <button class="btn btn-p" onclick="avisarClaude()" style="background:#c96442;border-color:#c96442" title="Copia un mensaje listo y abre Claude para clasificar comprobantes nuevos">🤖 Avisar a Claude</button>
       <button class="btn btn-warn" onclick="exportarExcel()" style="background:#e8f4ed;color:#1a5c3a;border-color:#c3e6d1">📊 Exportar Excel</button>
       <button class="btn btn-p" onclick="exportarHTMLConDatos()" title="Genera un HTML con todos los datos incluidos para compartir">🌐 Generar HTML para compartir</button>
       <button class="btn btn-s" onclick="importarDatos()">⬆️ Importar datos</button>
@@ -607,6 +608,20 @@ async function guardarEnSheets(mes, saldo, gastosArr) {
     console.log('Error guardando en Sheets:', err);
     return false;
   }
+}
+
+async function avisarClaude() {
+  const mesNombre = MESES[mesReg];
+  const mensaje = `Ya subí comprobantes nuevos de ${mesNombre} a la carpeta de Google Drive del mes. Por favor clasifícalos con las reglas ya establecidas (diccionario de clasificación + catálogo de Ministerios/Comisiones) y dame el bloque de texto listo para pegar con "Pegar varias filas".`;
+
+  try {
+    await navigator.clipboard.writeText(mensaje);
+    showNotif('notif-reg', '✓ Mensaje copiado al portapapeles. Se abrió Claude en una pestaña nueva — solo pegue (Ctrl+V) y envíe.', 'ok');
+  } catch (err) {
+    // Si el navegador bloquea el portapapeles, mostrar el mensaje para copiar a mano
+    showNotif('notif-reg', '⚠️ No se pudo copiar automáticamente. Mensaje sugerido: "' + mensaje + '"', 'warn');
+  }
+  window.open('https://claude.ai/new', '_blank');
 }
 
 async function migrarTodoASheets() {
