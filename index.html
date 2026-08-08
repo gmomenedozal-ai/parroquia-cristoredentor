@@ -649,6 +649,15 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzQswbeO-32tWtYb_v8WVjA
 let sheetsDisponible = false;
 
 async function cargarDesdeSheets() {
+  // Parámetro especial: ?forzarlocal=1 en la URL hace que la app IGNORE Google Sheets
+  // y use los datos que trae este archivo. Se usa una sola vez para volver a sincronizar
+  // Sheets con una corrección hecha directamente en el archivo (ver botón "Migrar todo a Sheets").
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('forzarlocal') === '1') {
+    console.log('⚠️ Modo forzar local activo: se ignoró Google Sheets, usando datos del archivo.');
+    sheetsDisponible = true;
+    return false;
+  }
   try {
     const resp = await fetch(API_URL);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
