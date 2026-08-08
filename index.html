@@ -707,23 +707,25 @@ async function avisarClaude() {
 }
 
 async function migrarTodoASheets() {
-  if (!confirm('Esto sobrescribirá TODO el contenido del Google Sheet con los datos actuales de esta app (' + DATA.gastos.length + ' registros). ¿Continuar?')) return;
-  showNotif('notif-reg', '⏳ Migrando datos a Google Sheets...', 'ok');
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ accion: 'migrarTodo', saldos: DATA.saldos, gastos: DATA.gastos })
-    });
-    const r = await resp.json();
-    if (r.ok) {
-      sheetsDisponible = true;
-      showNotif('notif-reg', `✓ Migración completa — ${r.migrados} registros guardados en Google Sheets`, 'ok');
-    } else {
-      showNotif('notif-reg', '✗ Error en la migración: ' + (r.error||''), 'err');
-    }
-  } catch (err) {
-    showNotif('notif-reg', '✗ Error de conexión: ' + err.message, 'err');
+  const meses = Object.keys(DATA.saldos).map(Number).sort((a,b)=>a-b);
+  if (!confirm(`Esto sobrescribirá el contenido de Google Sheet, mes por mes (${meses.length} meses, ${DATA.gastos.length} registros en total). Se envía en paquetes chicos para evitar que se corte a la mitad. ¿Continuar?`)) return;
+
+  let mesesOk = 0, mesesError = [];
+  for (const mes of meses) {
+    showNotif('notif-reg', `⏳ Migrando ${MESES[mes]} (${mesesOk+1} de ${meses.length})...`, 'ok');
+    const gastosDelMes = DATA.gastos.filter(g => g.mes === mes);
+    const ok = await guardarEnSheets(mes, DATA.saldos[mes], gastosDelMes);
+    if (ok) mesesOk++;
+    else mesesError.push(MESES[mes]);
+    // Pequeña pausa entre envíos para no saturar el servicio de Google
+    await new Promise(r => setTimeout(r, 600));
+  }
+
+  if (mesesError.length === 0) {
+    sheetsDisponible = true;
+    showNotif('notif-reg', `✓ Migración completa — los ${meses.length} meses (${DATA.gastos.length} registros) se guardaron correctamente en Google Sheets`, 'ok');
+  } else {
+    showNotif('notif-reg', `⚠️ Se migraron ${mesesOk} de ${meses.length} meses. Fallaron: ${mesesError.join(', ')}. Puede volver a intentar — no duplica lo que ya se guardó bien.`, 'warn');
   }
 }
 
