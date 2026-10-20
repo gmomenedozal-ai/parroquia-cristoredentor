@@ -297,6 +297,31 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
 .modal h3{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.01em;margin-bottom:.75rem}
 .modal p{font-size:13px;color:var(--txt2);margin-bottom:1rem;line-height:1.6}
 .modal .btn-row{margin-bottom:0}
+/* Cuentas por pagar */
+.cxp-bar{height:6px;border-radius:3px;background:var(--gris2);overflow:hidden;min-width:70px}
+.cxp-bar>i{display:block;height:100%;background:var(--verde2)}
+.cxp-st{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.cxp-st.pend{background:var(--azul-p);color:var(--azul)}
+.cxp-st.abon{background:var(--dorado-p);color:var(--dorado)}
+.cxp-st.pag{background:var(--verde-p);color:var(--verde)}
+.cxp-st.venc{background:var(--rojo-p);color:var(--rojo)}
+.cxp-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.cxp-tbl th{text-align:left;font-size:11px;color:var(--txt3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--borde);background:var(--gris);white-space:nowrap}
+.cxp-tbl td{padding:8px 10px;border-bottom:1px solid var(--gris2);vertical-align:middle}
+.cxp-tbl td.n,.cxp-tbl th.n{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12.5px;white-space:nowrap}
+.cxp-tbl tr.sub td{background:var(--gris);font-size:12px;color:var(--txt2)}
+.cxp-acc{display:flex;gap:6px;flex-wrap:wrap}
+.cxp-acc .btn{padding:4px 10px;font-size:12px}
+.cxp-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.cxp-filtros input,.cxp-filtros select,.cxp-form input,.cxp-form select,.cxp-form textarea{padding:7px 10px;border:1px solid var(--borde);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;background:var(--blanco);color:var(--txt)}
+.cxp-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.cxp-form .full{grid-column:1/-1}
+.cxp-form .field input,.cxp-form .field select,.cxp-form .field textarea{width:100%}
+.cxp-arz{border-left:4px solid var(--azul);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.cxp-aging{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 16px}
+.cxp-aging div{background:var(--gris);border-radius:8px;padding:8px 10px;font-size:12px}
+.cxp-aging b{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;margin-top:2px}
+@media(max-width:700px){.cxp-form{grid-template-columns:1fr}.cxp-aging{grid-template-columns:1fr 1fr}.cxp-tbl .opc{display:none}}
 /* Bandeja de Cowork */
 .modal.modal-xl{max-width:1100px;width:95%;max-height:88vh;overflow:auto}
 .bdj-lote{border:1px solid var(--borde);border-radius:10px;margin-bottom:1rem;overflow:hidden}
@@ -343,6 +368,7 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <button class="tab" onclick="showSec('comprobantes')">🗂️ Comprobantes</button>
     <button class="tab" onclick="showSec('comparativo')">📈 Comparativo anual</button>
     <button class="tab" onclick="showSec('presupuesto')">📋 Presupuesto</button>
+    <button class="tab" onclick="showSec('cxp')">💳 Cuentas por pagar</button>
     <button class="tab" id="tab-admin-btn" onclick="pedirClave()" style="margin-left:auto;color:var(--txt3);font-size:12px" title="Acceso administrador">🔒</button>
   </div>
 </nav>
@@ -564,6 +590,105 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <div style="overflow-x:auto"><table class="ctbl" id="ctbl-cat"></table></div>
   </div>
 </section>
+
+<!-- ===== CUENTAS POR PAGAR ===== -->
+<section class="sec" id="sec-cxp">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem">
+    <div>
+      <div class="sec-t">Cuentas por pagar</div>
+      <div class="sec-s" style="margin-bottom:0">Lo que la parroquia debe y aún no ha pagado, con sus abonos y saldo. El pago real sigue registrándose como gasto.</div>
+    </div>
+    <div class="btn-row" style="margin-bottom:0">
+      <button class="btn btn-p" onclick="cxpNueva()">+ Nueva cuenta por pagar</button>
+      <button class="btn btn-s" onclick="cxpInforme()">📄 Informe</button>
+      <button class="btn btn-s" onclick="cxpExportar()" title="Guardar copia de respaldo">⬇ Respaldo</button>
+      <button class="btn btn-s" onclick="document.getElementById('cxp-imp').click()" title="Restaurar copia de respaldo">⬆ Restaurar</button>
+      <input type="file" id="cxp-imp" accept=".json" style="display:none" onchange="cxpImportar(this)">
+    </div>
+  </div>
+  <div class="kpi-g" id="cxp-kpis"></div>
+  <div class="card cxp-arz" id="cxp-arz"></div>
+  <div class="card">
+    <div class="cxp-filtros">
+      <select id="cxp-f-estado" onchange="renderCxp()">
+        <option value="abiertas">Abiertas</option>
+        <option value="vencidas">Vencidas</option>
+        <option value="pagadas">Pagadas</option>
+        <option value="todas">Todas</option>
+      </select>
+      <select id="cxp-f-acreedor" onchange="renderCxp()"></select>
+      <input type="search" id="cxp-f-q" placeholder="Buscar concepto…" oninput="renderCxp()">
+    </div>
+    <div style="overflow-x:auto"><table class="cxp-tbl" id="cxp-tbl"></table></div>
+    <div id="cxp-notif" style="margin-top:8px"></div>
+  </div>
+</section>
+
+<!-- MODAL CxP: nueva / editar -->
+<div class="modal-bg" id="modal-cxp">
+  <div class="modal" style="max-width:560px">
+    <h3 id="cxp-m-titulo">Nueva cuenta por pagar</h3>
+    <div class="cxp-form">
+      <div class="field"><label>Acreedor</label><input id="cxp-m-acreedor" list="cxp-acreedores" placeholder="Ej. Arzobispado"></div>
+      <div class="field"><label>Tipo</label>
+        <select id="cxp-m-tipo"><option>Aporte</option><option>Servicio</option><option>Proveedor</option><option>Reintegro</option><option>Préstamo</option><option>Otro</option></select></div>
+      <div class="field full"><label>Concepto</label><input id="cxp-m-concepto" placeholder="Ej. Pago pendiente retiro anterior"></div>
+      <div class="field"><label>Monto original ($)</label><input id="cxp-m-monto" type="number" step="0.01" min="0"></div>
+      <div class="field"><label>Fecha de la deuda</label><input id="cxp-m-fecha" type="date"></div>
+      <div class="field"><label>Vence (opcional)</label><input id="cxp-m-vence" type="date"></div>
+      <div class="field"><label>Palabra para vincular gastos</label><input id="cxp-m-clave" placeholder="Ej. diezmo (para proponer abonos)"></div>
+      <div class="field full"><label>Nota</label><textarea id="cxp-m-nota" rows="2"></textarea></div>
+    </div>
+    <datalist id="cxp-acreedores"></datalist>
+    <input type="hidden" id="cxp-m-id">
+    <div class="btn-row"><button class="btn btn-p" onclick="cxpGuardarOb()">Guardar</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL CxP: abono -->
+<div class="modal-bg" id="modal-cxp-abono">
+  <div class="modal" style="max-width:520px">
+    <h3>Registrar abono o pago</h3>
+    <p id="cxp-a-info"></p>
+    <div class="cxp-form">
+      <div class="field full"><label>Vincular con un gasto ya registrado (opcional)</label><select id="cxp-a-gasto" onchange="cxpElegirGasto()"></select></div>
+      <div class="field"><label>Fecha de pago</label><input id="cxp-a-fecha" type="date"></div>
+      <div class="field"><label>Monto ($)</label><input id="cxp-a-monto" type="number" step="0.01" min="0"></div>
+      <div class="field full"><label>Comprobante (nombre del PDF)</label><input id="cxp-a-pdf" placeholder="Ej. 010826_DiezmoArzobispado032026.pdf"></div>
+      <div class="field full"><label>Nota</label><input id="cxp-a-nota"></div>
+    </div>
+    <input type="hidden" id="cxp-a-id">
+    <div class="btn-row"><button class="btn btn-p" onclick="cxpGuardarAbono()">Guardar abono</button><button class="btn btn-s" onclick="cxpAbonoTotal()">Pagar el saldo completo</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL CxP: diezmo del mes -->
+<div class="modal-bg" id="modal-cxp-diezmo">
+  <div class="modal">
+    <h3>Generar diezmo del Arzobispado</h3>
+    <p>El 10% de la colecta dominical del mes se debe al Arzobispado. Escriba el total de la colecta dominical y se crea la cuenta por pagar.</p>
+    <div class="cxp-form">
+      <div class="field"><label>Mes</label><select id="cxp-d-mes"></select></div>
+      <div class="field"><label>Año</label><input id="cxp-d-anio" type="number" value="2026"></div>
+      <div class="field full"><label>Colecta dominical del mes ($)</label><input id="cxp-d-col" type="number" step="0.01" min="0" oninput="cxpCalcDiezmo()"></div>
+      <div class="field full"><label>Diezmo (10%)</label><input id="cxp-d-val" type="number" step="0.01" min="0"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-p" onclick="cxpGuardarDiezmo()">Crear</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL CxP: informe -->
+<div class="modal-bg" id="modal-cxp-informe">
+  <div class="modal modal-xl">
+    <h3>📄 Informe de cuentas por pagar</h3>
+    <div id="cxp-inf-body"></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-p" onclick="cxpImprimir()">Imprimir o guardar PDF</button>
+      <button class="btn btn-s" onclick="cxpCSV()">Descargar CSV</button>
+      <button class="btn btn-s" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== PRESUPUESTO ===== -->
 <section class="sec" id="sec-presupuesto">
@@ -2913,15 +3038,307 @@ function showSec(id) {
   if(id==='comprobantes') renderComprobantes();
   if(id==='comparativo')  renderComparativo();
   if(id==='presupuesto')  renderPresupuesto();
+  if(id==='cxp')          renderCxp();
 }
 
 // ================================================================
 // INIT
 // ================================================================
+// ================================================================
+// CUENTAS POR PAGAR (CxP)
+// Se guarda aparte de DATA (localStorage 'parroquia_cxp_v1') para que la sincronización
+// con Google Sheets no lo sobrescriba. Use ⬇ Respaldo para guardar una copia.
+// ================================================================
+const CXP_KEY = 'parroquia_cxp_v1';
+let CXP = { obl: [] };
+let cxpAbiertos = {};
+
+function cxpSemilla() {
+  // Diezmo del Arzobispado según el Informe de Ingresos del 1-sep-2026 (10% de la colecta dominical)
+  const mk = (id, ac, tipo, con, monto, fecha, clave, nota, abonos) => ({id, acreedor:ac, tipo, concepto:con, monto, fecha, vence:'', clave, nota, origen:'semilla', abonos: abonos||[]});
+  const dz = [['Mar',456.96,'03'],['Abr',336.16,'04'],['May',428.30,'05'],['Jun',371.29,'06'],['Jul',396.54,'07'],['Ago',362.12,'08']];
+  const obl = [
+    mk('arz-2024','Arzobispado','Aporte','Diezmo 2024 (enero a diciembre)',6017.48,'2024-12-31','diezmo',
+      'El informe de Drive muestra $0 transferido en 2024. Verifique si se pagó antes de cobrarlo. Se compensó el sobrepago neto de 2025 según ese informe.',
+      [{id:'a-arz-24-1',fecha:'2026-09-01',monto:95.85,pdf:'',nota:'Sobrepago neto 2025 (según informe)',gasto:'',compens:true}])
+  ];
+  dz.forEach(d => {
+    const ab = [];
+    if (d[0]==='Mar') ab.push({id:'a-arz-03',fecha:'2026-09-01',monto:456.96,pdf:'010826_DiezmoArzobispado032026.pdf',nota:'Transfer365 ref. 12766233',gasto:''});
+    if (d[0]==='Abr') ab.push({id:'a-arz-04',fecha:'2026-09-01',monto:336.16,pdf:'010826_DiezmoArzobispado042026.pdf',nota:'Transfer365 ref. 12766333',gasto:''});
+    obl.push(mk('arz-2026-'+d[2],'Arzobispado','Aporte','Diezmo '+({Mar:'marzo',Abr:'abril',May:'mayo',Jun:'junio',Jul:'julio',Ago:'agosto'})[d[0]]+' 2026',d[1],'2026-'+d[2]+'-28','diezmo','',ab));
+  });
+  obl.push(mk('retiro-ant','Retiro anterior','Otro','Pago pendiente del retiro anterior',2000,'','retiro','Monto indicado por el tesorero. Complete acreedor, fecha y vencimiento si corresponde.',[]));
+  return { obl };
+}
+function cxpCargar() {
+  try {
+    const s = localStorage.getItem(CXP_KEY);
+    if (s) { const o = JSON.parse(s); if (o && Array.isArray(o.obl)) { CXP = o; return; } }
+  } catch(e) {}
+  CXP = cxpSemilla();
+  cxpGuardar();
+}
+function cxpGuardar() { try { localStorage.setItem(CXP_KEY, JSON.stringify(CXP)); } catch(e) {} }
+
+const cxpM = v => '$' + (+v||0).toLocaleString('es-SV',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cxpHoy = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const cxpF = s => { if(!s) return '—'; const p=String(s).split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : s; };
+const cxpAbonado = o => r2((o.abonos||[]).reduce((s,a)=>s+(+a.monto||0),0));
+const cxpSaldo = o => r2(o.monto - cxpAbonado(o));
+function cxpEstado(o) {
+  const sal = cxpSaldo(o);
+  if (sal <= 0.005) return {k:'pag', t:'Pagada'};
+  if (o.vence && o.vence < cxpHoy()) return {k:'venc', t:'Vencida'};
+  if (cxpAbonado(o) > 0) return {k:'abon', t:'Abonada'};
+  return {k:'pend', t:'Pendiente'};
+}
+function cxpDias(o) {
+  const ref = o.vence || o.fecha;
+  if (!ref) return null;
+  return Math.floor((new Date(cxpHoy()) - new Date(ref)) / 86400000);
+}
+function cxpReq() { if (adminAutenticado) return true; pedirClave(); return false; }
+function cxpId() { return 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function renderCxp() {
+  if (!$('cxp-tbl')) return;
+  const hoy = cxpHoy();
+  const abiertas = CXP.obl.filter(o => cxpSaldo(o) > 0.005);
+  const totalAdeudado = r2(abiertas.reduce((s,o)=>s+cxpSaldo(o),0));
+  const vencido = r2(abiertas.filter(o=>o.vence && o.vence<hoy).reduce((s,o)=>s+cxpSaldo(o),0));
+  const mesAct = hoy.slice(0,7);
+  const abMes = r2(CXP.obl.reduce((s,o)=>s+(o.abonos||[]).filter(a=>(a.fecha||'').slice(0,7)===mesAct).reduce((x,a)=>x+(+a.monto||0),0),0));
+  $('cxp-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-l">Total adeudado</div><div class="kpi-v r">${cxpM(totalAdeudado)}</div><div class="kpi-s">Saldo de cuentas abiertas</div></div>
+    <div class="kpi"><div class="kpi-l">Vencido</div><div class="kpi-v ${vencido?'r':''}">${cxpM(vencido)}</div><div class="kpi-s">Con fecha de vencimiento pasada</div></div>
+    <div class="kpi"><div class="kpi-l">Abonado este mes</div><div class="kpi-v g">${cxpM(abMes)}</div><div class="kpi-s">${MESES[+hoy.slice(5,7)]} ${hoy.slice(0,4)}</div></div>
+    <div class="kpi"><div class="kpi-l">Cuentas abiertas</div><div class="kpi-v b">${abiertas.length}</div><div class="kpi-s">${CXP.obl.length-abiertas.length} pagadas</div></div>`;
+
+  // Tarjeta Arzobispado
+  const arz = CXP.obl.filter(o => /arzobispado/i.test(o.acreedor));
+  const arzAb = arz.filter(o=>cxpSaldo(o)>0.005);
+  const arzSaldo = r2(arzAb.reduce((s,o)=>s+cxpSaldo(o),0));
+  const ultimos = arz.flatMap(o=>o.abonos||[]).filter(a=>a.fecha && !a.compens).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  $('cxp-arz').innerHTML = `
+    <div><div class="kpi-l">Arzobispado — diezmo pendiente por transferir</div>
+      <div class="kpi-v r">${cxpM(arzSaldo)}</div>
+      <div class="kpi-s">${arzAb.length} cuenta(s) abierta(s)${ultimos[0]?` · último pago ${cxpF(ultimos[0].fecha)} por ${cxpM(ultimos[0].monto)}`:''}</div></div>
+    <div class="btn-row" style="margin:0"><button class="btn btn-p" onclick="cxpDiezmo()">+ Generar diezmo del mes</button>
+      <button class="btn btn-s" onclick="$('cxp-f-q').value='';$('cxp-f-estado').value='abiertas';$('cxp-f-acreedor').value='Arzobispado';renderCxp()">Ver detalle</button></div>`;
+
+  // Filtros
+  const acs = [...new Set(CXP.obl.map(o=>o.acreedor).filter(Boolean))].sort();
+  const selAc = $('cxp-f-acreedor'), prev = selAc.value || '';
+  selAc.innerHTML = '<option value="">Todos los acreedores</option>' + acs.map(a=>`<option ${a===prev?'selected':''}>${bdjEsc(a)}</option>`).join('');
+  $('cxp-acreedores').innerHTML = acs.map(a=>`<option value="${bdjEsc(a)}">`).join('');
+  const fe = $('cxp-f-estado').value, fa = selAc.value, q = ($('cxp-f-q').value||'').toLowerCase();
+  let lista = CXP.obl.filter(o => {
+    const e = cxpEstado(o).k;
+    if (fe==='abiertas' && e==='pag') return false;
+    if (fe==='vencidas' && e!=='venc') return false;
+    if (fe==='pagadas' && e!=='pag') return false;
+    if (fa && o.acreedor!==fa) return false;
+    if (q && !(`${o.acreedor} ${o.concepto} ${o.nota}`.toLowerCase().includes(q))) return false;
+    return true;
+  }).sort((a,b)=> (a.acreedor||'').localeCompare(b.acreedor||'') || (a.fecha||'').localeCompare(b.fecha||''));
+
+  let h = `<tr><th>Acreedor</th><th>Concepto</th><th class="opc">Vence</th><th class="n">Original</th><th class="n">Abonado</th><th class="n">Saldo</th><th class="opc">Avance</th><th>Estado</th><th>Acciones</th></tr>`;
+  if (!lista.length) h += `<tr><td colspan="9" style="padding:18px;color:var(--txt3)">No hay cuentas en este filtro. Use “+ Nueva cuenta por pagar” para agregar una.</td></tr>`;
+  lista.forEach(o => {
+    const ab = cxpAbonado(o), sal = cxpSaldo(o), st = cxpEstado(o);
+    const pct = o.monto>0 ? Math.min(100, Math.round(ab/o.monto*100)) : 0;
+    const n = (o.abonos||[]).length;
+    h += `<tr>
+      <td><b>${bdjEsc(o.acreedor)}</b><div class="bdj-nota">${bdjEsc(o.tipo||'')}</div></td>
+      <td>${bdjEsc(o.concepto)}${o.nota?`<div class="bdj-nota">${bdjEsc(o.nota)}</div>`:''}</td>
+      <td class="opc">${cxpF(o.vence)}</td>
+      <td class="n">${cxpM(o.monto)}</td><td class="n">${cxpM(ab)}</td><td class="n"><b>${cxpM(Math.max(sal,0))}</b></td>
+      <td class="opc"><div class="cxp-bar"><i style="width:${pct}%"></i></div><div class="bdj-nota">${pct}%</div></td>
+      <td><span class="cxp-st ${st.k}">${st.t}</span></td>
+      <td><div class="cxp-acc">
+        ${sal>0.005?`<button class="btn btn-p" onclick="cxpAbonar('${o.id}')">Abonar</button>`:''}
+        <button class="btn btn-s" onclick="cxpToggle('${o.id}')">Historial (${n})</button>
+        <button class="btn btn-s" onclick="cxpEditar('${o.id}')">Editar</button>
+      </div></td></tr>`;
+    if (cxpAbiertos[o.id]) {
+      const rows = (o.abonos||[]).slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(a=>`
+        <tr class="sub"><td></td><td colspan="2">${cxpF(a.fecha)} — ${bdjEsc(a.nota||'Abono')}${a.pdf?` · 📄 ${bdjEsc(a.pdf)}`:''}</td>
+        <td class="n"></td><td class="n">${cxpM(a.monto)}</td><td></td><td class="opc"></td><td></td>
+        <td><button class="btn btn-s" style="padding:3px 9px;font-size:11px" onclick="cxpQuitarAbono('${o.id}','${a.id}')">Quitar</button></td></tr>`).join('');
+      h += rows || `<tr class="sub"><td></td><td colspan="8">Aún no tiene abonos.</td></tr>`;
+    }
+  });
+  $('cxp-tbl').innerHTML = h;
+}
+function cxpToggle(id) { cxpAbiertos[id] = !cxpAbiertos[id]; renderCxp(); }
+
+// ---- Nueva / editar ----
+function cxpNueva() {
+  if (!cxpReq()) return;
+  $('cxp-m-titulo').textContent = 'Nueva cuenta por pagar';
+  ['id','acreedor','concepto','monto','vence','clave','nota'].forEach(k=>$('cxp-m-'+k).value='');
+  $('cxp-m-tipo').value = 'Otro'; $('cxp-m-fecha').value = cxpHoy();
+  showModal('modal-cxp');
+}
+function cxpEditar(id) {
+  if (!cxpReq()) return;
+  const o = CXP.obl.find(x=>x.id===id); if (!o) return;
+  $('cxp-m-titulo').textContent = 'Editar cuenta por pagar';
+  $('cxp-m-id').value = o.id; $('cxp-m-acreedor').value = o.acreedor||''; $('cxp-m-tipo').value = o.tipo||'Otro';
+  $('cxp-m-concepto').value = o.concepto||''; $('cxp-m-monto').value = o.monto; $('cxp-m-fecha').value = o.fecha||'';
+  $('cxp-m-vence').value = o.vence||''; $('cxp-m-clave').value = o.clave||''; $('cxp-m-nota').value = o.nota||'';
+  showModal('modal-cxp');
+  // botón eliminar
+  const row = document.querySelector('#modal-cxp .btn-row');
+  if (!$('cxp-m-del')) { const b=document.createElement('button'); b.id='cxp-m-del'; b.className='btn btn-warn'; b.textContent='Eliminar'; b.onclick=()=>cxpEliminar($('cxp-m-id').value); row.appendChild(b); }
+  $('cxp-m-del').style.display = '';
+}
+function cxpGuardarOb() {
+  const ac = $('cxp-m-acreedor').value.trim(), con = $('cxp-m-concepto').value.trim(), monto = r2(parseFloat($('cxp-m-monto').value)||0);
+  if (!ac || !con || monto<=0) { alert('Complete acreedor, concepto y un monto mayor que cero.'); return; }
+  const id = $('cxp-m-id').value;
+  const datos = {acreedor:ac, tipo:$('cxp-m-tipo').value, concepto:con, monto, fecha:$('cxp-m-fecha').value, vence:$('cxp-m-vence').value, clave:$('cxp-m-clave').value.trim(), nota:$('cxp-m-nota').value.trim()};
+  if (id) Object.assign(CXP.obl.find(x=>x.id===id), datos);
+  else CXP.obl.push({id:cxpId(), origen:'manual', abonos:[], ...datos});
+  cxpGuardar(); closeModal(); renderCxp();
+}
+function cxpEliminar(id) {
+  const o = CXP.obl.find(x=>x.id===id); if (!o) return;
+  if (!confirm(`¿Eliminar “${o.concepto}” de ${o.acreedor} con sus ${(o.abonos||[]).length} abono(s)? Esto no se puede deshacer.`)) return;
+  CXP.obl = CXP.obl.filter(x=>x.id!==id); cxpGuardar(); closeModal(); renderCxp();
+}
+// Al abrir "Nueva", ocultar el botón Eliminar
+(function(){ const f = window.cxpNueva; window.cxpNueva = function(){ f(); const d=$('cxp-m-del'); if(d) d.style.display='none'; }; })();
+
+// ---- Abonos ----
+let cxpGastosCand = [];
+function cxpAbonar(id) {
+  if (!cxpReq()) return;
+  const o = CXP.obl.find(x=>x.id===id); if (!o) return;
+  $('cxp-a-id').value = id;
+  $('cxp-a-info').innerHTML = `<b>${bdjEsc(o.acreedor)}</b> — ${bdjEsc(o.concepto)}<br>Original ${cxpM(o.monto)} · abonado ${cxpM(cxpAbonado(o))} · <b>saldo ${cxpM(cxpSaldo(o))}</b>`;
+  $('cxp-a-fecha').value = cxpHoy(); $('cxp-a-monto').value = ''; $('cxp-a-pdf').value = ''; $('cxp-a-nota').value = '';
+  const usados = new Set(CXP.obl.flatMap(x=>(x.abonos||[]).map(a=>a.gasto).filter(Boolean)));
+  const clave = (o.clave||'').toLowerCase();
+  cxpGastosCand = clave ? DATA.gastos.filter(g => `${g.sub||''} ${g.desc||''} ${g.cuenta||''}`.toLowerCase().includes(clave) && !usados.has(cxpGKey(g))).sort((a,b)=>b.mes-a.mes) : [];
+  $('cxp-a-gasto').innerHTML = '<option value="">— Ninguno (escribir manualmente) —</option>' +
+    cxpGastosCand.map((g,i)=>`<option value="${i}">${MESES3[g.mes]} ${g.fecha||''} · ${bdjEsc(g.desc)} · ${cxpM(g.valor)}</option>`).join('');
+  showModal('modal-cxp-abono');
+}
+const cxpGKey = g => [g.mes,g.fecha||'',r2(g.valor),g.pdf||''].join('|');
+function cxpElegirGasto() {
+  const i = $('cxp-a-gasto').value; if (i==='') return;
+  const g = cxpGastosCand[+i]; if (!g) return;
+  $('cxp-a-monto').value = r2(g.valor); $('cxp-a-pdf').value = g.pdf||'';
+  const m = /^(\d{1,2})\/(\d{1,2})$/.exec(g.fecha||'');
+  $('cxp-a-fecha').value = m ? `2026-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : $('cxp-a-fecha').value;
+}
+function cxpAbonoTotal() {
+  const o = CXP.obl.find(x=>x.id===$('cxp-a-id').value); if (!o) return;
+  $('cxp-a-monto').value = cxpSaldo(o); cxpGuardarAbono();
+}
+function cxpGuardarAbono() {
+  const o = CXP.obl.find(x=>x.id===$('cxp-a-id').value); if (!o) return;
+  const monto = r2(parseFloat($('cxp-a-monto').value)||0), fecha = $('cxp-a-fecha').value;
+  if (monto<=0 || !fecha) { alert('Indique la fecha y un monto mayor que cero.'); return; }
+  if (monto > cxpSaldo(o) + 0.005 && !confirm(`El abono (${cxpM(monto)}) es mayor que el saldo (${cxpM(cxpSaldo(o))}). ¿Registrarlo de todos modos?`)) return;
+  const i = $('cxp-a-gasto').value;
+  const g = (i!=='' && cxpGastosCand[+i]) ? cxpGKey(cxpGastosCand[+i]) : '';
+  (o.abonos = o.abonos||[]).push({id:cxpId(), fecha, monto, pdf:$('cxp-a-pdf').value.trim(), nota:$('cxp-a-nota').value.trim(), gasto:g});
+  cxpGuardar(); closeModal(); cxpAbiertos[o.id]=true; renderCxp();
+}
+function cxpQuitarAbono(oid, aid) {
+  if (!cxpReq()) return;
+  const o = CXP.obl.find(x=>x.id===oid); if (!o) return;
+  if (!confirm('¿Quitar este abono? El saldo de la cuenta aumentará.')) return;
+  o.abonos = o.abonos.filter(a=>a.id!==aid); cxpGuardar(); renderCxp();
+}
+
+// ---- Diezmo del Arzobispado ----
+function cxpDiezmo() {
+  if (!cxpReq()) return;
+  $('cxp-d-mes').innerHTML = MESES.slice(1).map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+  const d = new Date(); $('cxp-d-mes').value = d.getMonth()===0 ? 12 : d.getMonth(); $('cxp-d-anio').value = d.getMonth()===0 ? d.getFullYear()-1 : d.getFullYear();
+  $('cxp-d-col').value = ''; $('cxp-d-val').value = '';
+  showModal('modal-cxp-diezmo');
+}
+function cxpCalcDiezmo() { $('cxp-d-val').value = r2((parseFloat($('cxp-d-col').value)||0)*0.10); }
+function cxpGuardarDiezmo() {
+  const mes = +$('cxp-d-mes').value, anio = +$('cxp-d-anio').value, val = r2(parseFloat($('cxp-d-val').value)||0);
+  if (val<=0) { alert('Escriba la colecta dominical del mes.'); return; }
+  const concepto = `Diezmo ${MESES[mes].toLowerCase()} ${anio}`;
+  if (CXP.obl.some(o=>/arzobispado/i.test(o.acreedor) && o.concepto.toLowerCase()===concepto)) { alert('Ya existe la cuenta “'+concepto+'”.'); return; }
+  CXP.obl.push({id:cxpId(), acreedor:'Arzobispado', tipo:'Aporte', concepto, monto:val, fecha:`${anio}-${String(mes).padStart(2,'0')}-28`, vence:'', clave:'diezmo', nota:`10% de la colecta dominical (${cxpM(val*10)})`, origen:'diezmo', abonos:[]});
+  cxpGuardar(); closeModal(); renderCxp();
+}
+
+// ---- Informe ----
+function cxpDatosInforme() {
+  const ab = CXP.obl.filter(o=>cxpSaldo(o)>0.005);
+  const buckets = [0,0,0,0,0]; // al día / 0-30 / 31-60 / 61-90 / +90
+  ab.forEach(o => { const d = cxpDias(o), s = cxpSaldo(o); const i = (d===null||d<=0)?0 : d<=30?1 : d<=60?2 : d<=90?3 : 4; buckets[i]+=s; });
+  const porAc = {};
+  ab.forEach(o => { (porAc[o.acreedor] = porAc[o.acreedor]||[]).push(o); });
+  return {ab, buckets: buckets.map(r2), porAc, total: r2(ab.reduce((s,o)=>s+cxpSaldo(o),0))};
+}
+function cxpInformeHTML() {
+  const d = cxpDatosInforme(), hoy = cxpHoy();
+  const lbl = ['Sin vencer / sin fecha','0 a 30 días','31 a 60 días','61 a 90 días','Más de 90 días'];
+  let h = `<p><b>Parroquia Cristo Redentor — Consejo Económico</b><br>Cuentas por pagar al ${cxpF(hoy)}. Antigüedad calculada desde la fecha de vencimiento (o de la deuda si no tiene vencimiento).</p>
+    <div class="cxp-aging">${d.buckets.map((b,i)=>`<div>${lbl[i]}<b>${cxpM(b)}</b></div>`).join('')}</div>
+    <p><b>Total adeudado: ${cxpM(d.total)}</b></p>`;
+  Object.keys(d.porAc).sort().forEach(ac => {
+    const lst = d.porAc[ac], sub = r2(lst.reduce((s,o)=>s+cxpSaldo(o),0));
+    h += `<table class="cxp-tbl" style="margin-bottom:14px"><tr><th colspan="5">${bdjEsc(ac)} — saldo ${cxpM(sub)}</th></tr>
+      <tr><th>Concepto</th><th class="n">Original</th><th class="n">Abonado</th><th class="n">Saldo</th><th>Estado</th></tr>` +
+      lst.map(o=>`<tr><td>${bdjEsc(o.concepto)}</td><td class="n">${cxpM(o.monto)}</td><td class="n">${cxpM(cxpAbonado(o))}</td><td class="n">${cxpM(cxpSaldo(o))}</td><td>${cxpEstado(o).t}</td></tr>`).join('') + `</table>`;
+  });
+  if (!d.ab.length) h += '<p>No hay cuentas por pagar abiertas.</p>';
+  const pag = CXP.obl.filter(o=>cxpSaldo(o)<=0.005);
+  if (pag.length) h += `<p class="bdj-nota">${pag.length} cuenta(s) ya pagadas no se incluyen.</p>`;
+  return h;
+}
+function cxpInforme() { $('cxp-inf-body').innerHTML = cxpInformeHTML(); showModal('modal-cxp-informe'); }
+function cxpImprimir() {
+  const w = window.open('', '_blank'); if (!w) { alert('Permita las ventanas emergentes para imprimir.'); return; }
+  w.document.write(`<html><head><meta charset="utf-8"><title>Cuentas por pagar</title><style>
+    body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#111;padding:24px}
+    table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border-bottom:1px solid #ddd;padding:5px 8px;text-align:left}
+    th{background:#f2f4f7}.n{text-align:right}.cxp-aging{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}
+    .cxp-aging div{background:#f2f4f7;padding:6px 8px;border-radius:6px}.cxp-aging b{display:block;font-size:14px}</style></head><body>${cxpInformeHTML()}</body></html>`);
+  w.document.close(); w.focus(); setTimeout(()=>w.print(), 300);
+}
+function cxpDescargar(nombre, texto, tipo) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([texto], {type:tipo})); a.download = nombre; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function cxpCSV() {
+  const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const rows = [['Acreedor','Tipo','Concepto','Fecha','Vence','Original','Abonado','Saldo','Estado'].map(q).join(',')];
+  CXP.obl.forEach(o => rows.push([o.acreedor,o.tipo,o.concepto,o.fecha,o.vence,o.monto,cxpAbonado(o),cxpSaldo(o),cxpEstado(o).t].map(q).join(',')));
+  cxpDescargar('cuentas_por_pagar_'+cxpHoy()+'.csv', '﻿'+rows.join('\n'), 'text/csv;charset=utf-8');
+}
+function cxpExportar() { cxpDescargar('respaldo_cuentas_por_pagar_'+cxpHoy()+'.json', JSON.stringify(CXP,null,2), 'application/json'); }
+function cxpImportar(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const o = JSON.parse(r.result);
+      if (!o || !Array.isArray(o.obl)) throw new Error('formato');
+      if (!confirm(`El respaldo trae ${o.obl.length} cuenta(s) y reemplazará las actuales. ¿Continuar?`)) return;
+      CXP = o; cxpGuardar(); renderCxp();
+    } catch(e) { alert('No se pudo leer el respaldo. Use un archivo .json generado con “Respaldo”.'); }
+    inp.value = '';
+  };
+  r.readAsText(f);
+}
+
 document.addEventListener('DOMContentLoaded',async ()=>{
   const sheetsOk = await cargarDesdeSheets();
   cargarBandeja(false);
   cargarExtras();
+  cxpCargar();
   renderRecurrentes();
   buildMesPills();
   // Iniciar en el mes siguiente al último guardado
