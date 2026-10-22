@@ -376,7 +376,8 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <button class="tab" onclick="showSec('presupuesto')">📋 Presupuesto</button>
     <button class="tab" onclick="showSec('cxp')">💳 Cuentas por pagar</button>
     <button class="tab" onclick="showSec('becas')">🎓 Becas</button>
-    <button class="tab" id="tab-admin-btn" onclick="pedirClave()" style="margin-left:auto;color:var(--txt3);font-size:12px" title="Acceso administrador">🔒</button>
+    <button class="tab" id="btn-actualizar" onclick="actualizarApp(this)" style="margin-left:auto" title="Volver a leer los datos de Google Sheets y la Bandeja de Cowork">🔄 Actualizar</button>
+    <button class="tab" id="tab-admin-btn" onclick="pedirClave()" style="color:var(--txt3);font-size:12px" title="Acceso administrador">🔒</button>
   </div>
 </nav>
 
@@ -3934,6 +3935,39 @@ function becSincronizar() {
   if (n) { becGuardar(); cxpGuardar(); }
 }
 function becQuitarAviso() { becAvisos = []; renderBecas(); }
+
+// ---- Botón 🔄 Actualizar: vuelve a leer Sheets y la Bandeja sin recargar la página ----
+async function actualizarApp(btn) {
+  if (btn && btn.disabled) return;
+  const txt = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Actualizando…'; }
+  const nAntes = (DATA.gastos||[]).length;
+  const ok = await cargarDesdeSheets();
+  unificarGastos(DATA.gastos);
+  await cargarBandeja(false);
+  becSincronizar();
+  try { renderRecurrentes(); buildMesPills(); } catch(e) {}
+  const sec = document.querySelector('.sec.act');
+  const id = sec ? sec.id.replace(/^sec-/,'') : 'resumen';
+  try { if (id === 'registrar') cargarDatosMesReg(mesReg); else showSec(id); } catch(e) {}
+  const nLotes = (bandejaLotes||[]).length, dif = (DATA.gastos||[]).length - nAntes;
+  const hora = new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'});
+  actualizarAviso(ok
+    ? `✓ Actualizado a las ${hora}.${dif>0?` ${dif} gasto(s) nuevo(s).`:''}${nLotes?` Hay ${nLotes} lote(s) en la Bandeja de Cowork por revisar.`:' La Bandeja está vacía.'}`
+    : 'No se pudo conectar con Google Sheets. Revise su conexión e intente de nuevo.', ok);
+  if (btn) { btn.disabled = false; btn.textContent = txt; }
+}
+function actualizarAviso(msg, ok) {
+  let el = document.getElementById('aviso-actualizar');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'aviso-actualizar';
+    el.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:999;max-width:360px;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18);color:#fff';
+    document.body.appendChild(el);
+  }
+  el.style.background = ok ? 'var(--verde2)' : 'var(--rojo)';
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display = 'none'; }, 6000);
+}
 
 document.addEventListener('DOMContentLoaded',async ()=>{
   const sheetsOk = await cargarDesdeSheets();
