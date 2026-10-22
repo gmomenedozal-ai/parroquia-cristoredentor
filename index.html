@@ -3205,8 +3205,9 @@ function cxpSemilla() {
   const dz = [['Mar',456.96,'03'],['Abr',336.16,'04'],['May',428.30,'05'],['Jun',371.29,'06'],['Jul',396.54,'07'],['Ago',362.12,'08']];
   const obl = [
     mk('arz-2024','Arzobispado','Aporte','Diezmo 2024 (enero a diciembre)',6017.48,'2024-12-31','diezmo',
-      'El informe de Drive muestra $0 transferido en 2024. Verifique si se pagó antes de cobrarlo. Se compensó el sobrepago neto de 2025 según ese informe.',
-      [{id:'a-arz-24-1',fecha:'2026-09-01',monto:95.85,pdf:'',nota:'Sobrepago neto 2025 (según informe)',gasto:'',compens:true}])
+      'Cancelado. Confirmado por el tesorero el 22/10/2026.',
+      [{id:'a-arz-24-1',fecha:'2026-09-01',monto:95.85,pdf:'',nota:'Sobrepago neto 2025 (según informe)',gasto:'',compens:true},
+       {id:'a-arz-24-cancel',fecha:'2024-12-31',monto:5921.63,pdf:'',nota:'Cancelado (confirmado por el tesorero el 22/10/2026)',gasto:'',compens:true}])
   ];
   dz.forEach(d => {
     const ab = [];
@@ -3220,9 +3221,19 @@ function cxpSemilla() {
 function cxpCargar() {
   try {
     const s = localStorage.getItem(CXP_KEY);
-    if (s) { const o = JSON.parse(s); if (o && Array.isArray(o.obl)) { CXP = o; return; } }
+    if (s) { const o = JSON.parse(s); if (o && Array.isArray(o.obl)) { CXP = o; cxpCancelarDiezmo2024(); return; } }
   } catch(e) {}
   CXP = cxpSemilla();
+  cxpGuardar();
+}
+// El diezmo 2024 del Arzobispado ya se canceló (confirmado por el tesorero el 22/10/2026):
+// se salda para que no aparezca en cuentas abiertas ni en el informe.
+function cxpCancelarDiezmo2024() {
+  const o = CXP.obl.find(x=>x.id==='arz-2024');
+  if (!o || (o.abonos||[]).some(a=>a.id==='a-arz-24-cancel')) return;
+  const sal = cxpSaldo(o);
+  if (sal > 0.005) (o.abonos = o.abonos||[]).push({id:'a-arz-24-cancel', fecha:'2024-12-31', monto:sal, pdf:'', nota:'Cancelado (confirmado por el tesorero el 22/10/2026)', gasto:'', compens:true});
+  o.nota = 'Cancelado. Confirmado por el tesorero el 22/10/2026.';
   cxpGuardar();
 }
 function cxpGuardar() { try { localStorage.setItem(CXP_KEY, JSON.stringify(CXP)); } catch(e) {} }
