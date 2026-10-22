@@ -3561,10 +3561,29 @@ function renderBecas() {
     const idx = {'1ª':0,'2ª':1,'3ª':2}[eKey];
     const lst = grupos[eKey], tot = r2(lst.reduce((s,b)=>s+(BEC.montos[b.nivel]||[])[idx],0));
     const aut = lst.filter(b => becOblAbiertas().some(o=>o.becBid===b.id));
+    const totAut = r2(becOblAbiertas().filter(o=>lst.some(b=>b.id===o.becBid)).reduce((s,o)=>s+cxpSaldo(o),0));
+    const filas = lst.slice().sort((x,y)=>(aut.includes(y)-aut.includes(x)) || x.nombre.localeCompare(y.nombre)).map(b => {
+      const o = becOblAbiertas().find(x=>x.becBid===b.id);
+      const monto = o ? cxpSaldo(o) : (BEC.montos[b.nivel]||[])[idx];
+      return `<tr${o?'':' style="opacity:.6"'}>
+        <td><b>${bdjEsc(b.nombre)}</b><div class="bec-sub">${bdjEsc(b.nivel)}</div></td>
+        <td>${bdjEsc(b.banco||'—')}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;white-space:nowrap">${bdjEsc(b.cuenta||'—')}${b.cuenta?` <button class="btn btn-s" style="padding:1px 7px;font-size:11px" title="Copiar número de cuenta" onclick="becCopiar('${bdjEsc(b.cuenta)}',this)">📋</button>`:''}</td>
+        <td>${bdjEsc(b.titular||'—')}</td>
+        <td class="n"><b>${cxpM(monto)}</b></td>
+        <td>${o?'<span class="cxp-st pend">Autorizada</span>':'<span class="cxp-st venc">Falta autorización</span>'}</td>
+        <td>${o?`<button class="btn btn-p" style="padding:4px 10px;font-size:12px" onclick="becPagar('${b.id}')">Registrar pago</button>`:''}</td></tr>`;
+    }).join('');
     $('bec-prox').innerHTML = `
-      <div><div class="kpi-l">Próxima entrega: ${eKey} — ${lst.length} becado(s)</div>
-        <div class="kpi-v">${cxpM(tot)}</div>
-        <div class="kpi-s">Autorizados por el P. Jaime (en Cuentas por pagar): ${aut.length ? aut.map(b=>{const w=b.nombre.split(' ');return bdjEsc(w[0]+' '+(w.length>3?w[2]:(w[1]||'')));}).join(', ') : 'ninguno aún'}${lst.length>aut.length?` · Sin autorización: ${lst.filter(b=>!aut.includes(b)).map(b=>bdjEsc(b.nombre.split(' ')[0])).join(', ')}`:''}</div></div>`;
+      <div style="width:100%">
+        <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;margin-bottom:10px">
+          <div><div class="kpi-l">Próxima entrega: ${eKey} — por abonar ya (autorizado)</div><div class="kpi-v r">${cxpM(totAut)}</div>
+            <div class="kpi-s">${aut.length} de ${lst.length} becado(s) con autorización del P. Jaime</div></div>
+          <div><div class="kpi-l">Total de la ${eKey} entrega</div><div class="kpi-v">${cxpM(tot)}</div><div class="kpi-s">Incluye los que aún no tienen autorización</div></div>
+        </div>
+        <div style="overflow-x:auto"><table class="cxp-tbl">
+          <tr><th>Becado</th><th>Banco</th><th>Número de cuenta</th><th>Titular de la cuenta</th><th class="n">Monto a abonar</th><th>Estado</th><th></th></tr>${filas}</table></div>
+      </div>`;
     $('bec-prox').style.display = '';
   } else { $('bec-prox').style.display = 'none'; }
   if ($('bec-notif')) $('bec-notif').innerHTML = becAvisos.length ? `<div class="card" style="border-left:4px solid var(--verde2);margin-bottom:1.25rem"><b>Actualizado automáticamente</b><ul style="margin:6px 0 6px 18px">${becAvisos.map(a=>`<li>${bdjEsc(a)}</li>`).join('')}</ul><button class="btn btn-s" onclick="becQuitarAviso()">Entendido</button></div>` : '';
@@ -3607,6 +3626,10 @@ function renderBecas() {
     }
   });
   $('bec-tbl').innerHTML = h;
+}
+function becCopiar(t, btn) {
+  const ok = () => { if (btn) { const o = btn.textContent; btn.textContent = '✓'; setTimeout(()=>btn.textContent=o, 1200); } };
+  try { navigator.clipboard.writeText(t).then(ok, ok); } catch(e) { ok(); }
 }
 function becToggle(id) { becAbiertos[id] = !becAbiertos[id]; renderBecas(); }
 // ---- Becado: nuevo / editar ----
