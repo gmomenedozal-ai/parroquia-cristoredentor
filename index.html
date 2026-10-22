@@ -3953,7 +3953,7 @@ async function actualizarApp(btn) {
   const nLotes = (bandejaLotes||[]).length, dif = (DATA.gastos||[]).length - nAntes;
   const hora = new Date().toLocaleTimeString('es-SV',{hour:'2-digit',minute:'2-digit'});
   actualizarAviso(ok
-    ? `✓ Actualizado a las ${hora}.${dif>0?` ${dif} gasto(s) nuevo(s).`:''}${nLotes?` Hay ${nLotes} lote(s) en la Bandeja de Cowork por revisar.`:' La Bandeja está vacía.'}`
+    ? `✓ Actualizado (${hora}).${dif>0?` ${dif} gasto(s) nuevo(s).`:''}${nLotes?` Hay ${nLotes} lote(s) en la Bandeja de Cowork por revisar.`:' La Bandeja está vacía.'}`
     : 'No se pudo conectar con Google Sheets. Revise su conexión e intente de nuevo.', ok);
   if (btn) { btn.disabled = false; btn.textContent = txt; }
 }
