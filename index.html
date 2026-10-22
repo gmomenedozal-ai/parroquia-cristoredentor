@@ -960,7 +960,22 @@ async function cargarDesdeSheets() {
   }
 }
 
+// Unificación de subcategorías de Energía: cada número de cuenta (NC) de CAESS queda con un solo nombre,
+// aunque en Sheets o en la Bandeja venga con otro nombre anterior.
+const SUB_UNIFICAR_NC = {
+  '200000459921': 'CAESS Templo NIC 2281517 NC 200000459921 (22)',
+  '200000539234': 'CAESS Oficina, S. Ángulo, Cómputo y Santísimo NC 200000539234 (22)'
+};
+function unificarSub(g) {
+  if (!g || g.cuenta !== 'Energía') return g;
+  const t = String(g.sub||'') + ' ' + String(g.desc||'');
+  for (const nc in SUB_UNIFICAR_NC) if (t.includes(nc)) { g.sub = SUB_UNIFICAR_NC[nc]; break; }
+  return g;
+}
+function unificarGastos(arr) { (arr||[]).forEach(unificarSub); return arr; }
+
 async function guardarEnSheets(mes, saldo, gastosArr) {
+  unificarGastos(gastosArr);
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
@@ -1186,8 +1201,8 @@ const SUBRUBROS_CAT = {
   'Energía': [
     'Energía_Electrica',
     'CAESS Casa Parroquial, S.Ángulo, Cómputo, Pasillo oficina y Santísimo NC 200000459289',
-    'CAESS Templo, Oficina NC 200000539234 (22)',
-    'CAESS Centro Pastoral NC 200000459921 (22)',
+    'CAESS Templo NIC 2281517 NC 200000459921 (22)',
+    'CAESS Oficina, S. Ángulo, Cómputo y Santísimo NC 200000539234 (22)',
     'Alcaldía NIC 24458902',
     'Alcaldía',
   ],
@@ -1320,8 +1335,8 @@ const RECURRENTES = [
   {id:'claro_22644829',nombre:'CTE 22644829 (internet)',cuenta:'Telefonía',         subrubro:'CTE Telecom SA de CV 22644829 12 del mes',monto:86.18,fijo:true},
   {id:'anda_444131',  nombre:'ANDA 444131',            cuenta:'Agua',               subrubro:'ANDA 444131',            monto:3.86,   fijo:false},
   {id:'anda_444146',  nombre:'ANDA 444146',            cuenta:'Agua',               subrubro:'ANDA 444146',            monto:288.78, fijo:false},
-  {id:'caess_centropastoral', nombre:'CAESS Centro Pastoral', cuenta:'Energía',      subrubro:'CAESS Centro Pastoral NC 200000459921 (22)',monto:353.94,fijo:false},
-  {id:'caess_temploficina',nombre:'CAESS Templo/Oficina', cuenta:'Energía',         subrubro:'CAESS Templo, Oficina NC 200000539234 (22)',monto:526.58,fijo:false},
+  {id:'caess_centropastoral', nombre:'CAESS Templo', cuenta:'Energía',      subrubro:'CAESS Templo NIC 2281517 NC 200000459921 (22)',monto:353.94,fijo:false},
+  {id:'caess_temploficina',nombre:'CAESS Oficina', cuenta:'Energía',         subrubro:'CAESS Oficina, S. Ángulo, Cómputo y Santísimo NC 200000539234 (22)',monto:526.58,fijo:false},
   {id:'seguro_vehic', nombre:'Seguro Vehículo',        cuenta:'Otros Servicios',    subrubro:'Seguro Vehículo davivienda 005130044402',monto:76.71,fijo:true},
   {id:'fraternidad',  nombre:'Fraternidad Sacerdotal', cuenta:'Aportes',            subrubro:'Arquidiócesis — Fraternidad Sacerdotal',monto:171.43,fijo:true},
   {id:'seminario_sjm',nombre:'Seminario San José de la Montaña',cuenta:'Aportes',  subrubro:'Seminario San José de la Montaña',monto:250.00,fijo:true},
@@ -3910,6 +3925,7 @@ function becQuitarAviso() { becAvisos = []; renderBecas(); }
 
 document.addEventListener('DOMContentLoaded',async ()=>{
   const sheetsOk = await cargarDesdeSheets();
+  unificarGastos(DATA.gastos);
   cargarBandeja(false);
   cargarExtras();
   cxpCargar();
