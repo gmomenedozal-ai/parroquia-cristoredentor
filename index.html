@@ -322,6 +322,12 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
 .cxp-aging div{background:var(--gris);border-radius:8px;padding:8px 10px;font-size:12px}
 .cxp-aging b{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;margin-top:2px}
 @media(max-width:700px){.cxp-form{grid-template-columns:1fr}.cxp-aging{grid-template-columns:1fr 1fr}.cxp-tbl .opc{display:none}}
+/* ===== BECAS ===== */
+.bec-tbl td .bec-sub{font-size:11.5px;color:var(--txt3);margin-top:2px}
+.bec-ent{display:inline-block;min-width:58px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.bec-ent.no{color:var(--txt3)}
+.bec-prox{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:1.25rem;border-left:4px solid var(--dorado)}
+.bec-seg{border-left:3px solid var(--azul);padding-left:8px}
 /* Bandeja de Cowork */
 .modal.modal-xl{max-width:1100px;width:95%;max-height:88vh;overflow:auto}
 .bdj-lote{border:1px solid var(--borde);border-radius:10px;margin-bottom:1rem;overflow:hidden}
@@ -369,6 +375,7 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <button class="tab" onclick="showSec('comparativo')">📈 Comparativo anual</button>
     <button class="tab" onclick="showSec('presupuesto')">📋 Presupuesto</button>
     <button class="tab" onclick="showSec('cxp')">💳 Cuentas por pagar</button>
+    <button class="tab" onclick="showSec('becas')">🎓 Becas</button>
     <button class="tab" id="tab-admin-btn" onclick="pedirClave()" style="margin-left:auto;color:var(--txt3);font-size:12px" title="Acceso administrador">🔒</button>
   </div>
 </nav>
@@ -685,6 +692,128 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <div class="btn-row" style="margin-top:10px">
       <button class="btn btn-p" onclick="cxpImprimir()">Imprimir o guardar PDF</button>
       <button class="btn btn-s" onclick="cxpCSV()">Descargar CSV</button>
+      <button class="btn btn-s" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BECAS ===== -->
+<section class="sec" id="sec-becas">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem">
+    <div>
+      <div class="sec-t">Becas <span id="bec-anio-t"></span></div>
+      <div class="sec-s" style="margin-bottom:0">A quién se apoya, cuánto, cuándo se le pagó y qué saldo le queda en el año. Al registrar la autorización del P. Jaime (+ Notas → Continuar beca) se crea la cuenta por pagar; cuando entra el gasto de la transferencia se aplica solo.</div>
+    </div>
+    <div class="btn-row" style="margin-bottom:0">
+      <button class="btn btn-p" onclick="becNuevo()">+ Nuevo becado</button>
+      <button class="btn btn-s" onclick="becInforme()">📄 Informe</button>
+      <button class="btn btn-s" onclick="becMontos()" title="Montos por entrega y año de control">⚙ Montos</button>
+      <button class="btn btn-s" onclick="becExportar()" title="Guardar copia de respaldo">⬇ Respaldo</button>
+      <button class="btn btn-s" onclick="document.getElementById('bec-imp').click()" title="Restaurar copia de respaldo">⬆ Restaurar</button>
+      <input type="file" id="bec-imp" accept=".json" style="display:none" onchange="becImportar(this)">
+    </div>
+  </div>
+  <div class="kpi-g" id="bec-kpis"></div>
+  <div id="bec-notif"></div>
+  <div class="card bec-prox" id="bec-prox"></div>
+  <div class="card">
+    <div class="cxp-filtros">
+      <select id="bec-f-estado" onchange="renderBecas()">
+        <option value="Activa">Activas</option>
+        <option value="Por confirmar">Por confirmar</option>
+        <option value="Suspendida">Suspendidas</option>
+        <option value="Finalizada">Finalizadas</option>
+        <option value="">Todas</option>
+      </select>
+      <select id="bec-f-nivel" onchange="renderBecas()">
+        <option value="">Universidad y bachillerato</option>
+        <option>Universidad</option>
+        <option>Bachillerato</option>
+      </select>
+      <input type="search" id="bec-f-q" placeholder="Buscar becado o centro de estudio…" oninput="renderBecas()">
+    </div>
+    <div style="overflow-x:auto"><table class="cxp-tbl bec-tbl" id="bec-tbl"></table></div>
+  </div>
+</section>
+
+<!-- MODAL BECAS: becado -->
+<div class="modal-bg" id="modal-bec">
+  <div class="modal" style="max-width:600px">
+    <h3 id="bec-m-titulo">Nuevo becado</h3>
+    <div class="cxp-form">
+      <div class="field full"><label>Nombre del becado</label><input id="bec-m-nombre"></div>
+      <div class="field"><label>Nivel</label><select id="bec-m-nivel"><option>Universidad</option><option>Bachillerato</option></select></div>
+      <div class="field"><label>Estado</label><select id="bec-m-estado"><option>Activa</option><option>Por confirmar</option><option>Suspendida</option><option>Finalizada</option></select></div>
+      <div class="field full"><label>Centro de estudio</label><input id="bec-m-centro" placeholder="Ej. Universidad Pedagógica de El Salvador"></div>
+      <div class="field full"><label>Carrera / grado</label><input id="bec-m-carrera"></div>
+      <div class="field"><label>Banco destino</label><input id="bec-m-banco"></div>
+      <div class="field"><label>Cuenta destino</label><input id="bec-m-cuenta"></div>
+      <div class="field full"><label>Titular de la cuenta</label><input id="bec-m-titular"></div>
+      <div class="field full"><label>Nota</label><textarea id="bec-m-nota" rows="2"></textarea></div>
+    </div>
+    <input type="hidden" id="bec-m-id">
+    <div class="btn-row"><button class="btn btn-p" onclick="becGuardarB()">Guardar</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button><button class="btn btn-warn" id="bec-m-del" onclick="becEliminar()">Eliminar</button></div>
+  </div>
+</div>
+
+<!-- MODAL BECAS: pago -->
+<div class="modal-bg" id="modal-bec-pago">
+  <div class="modal" style="max-width:560px">
+    <h3>Registrar pago de beca</h3>
+    <p id="bec-p-info"></p>
+    <div class="cxp-form">
+      <div class="field full"><label>Vincular con un gasto ya registrado (opcional)</label><select id="bec-p-gasto" onchange="becElegirGasto()"></select></div>
+      <div class="field"><label>Entrega</label><select id="bec-p-entrega" onchange="becMontoEntrega()"><option>1ª</option><option>2ª</option><option>3ª</option><option>Extra</option></select></div>
+      <div class="field"><label>Fecha de pago</label><input id="bec-p-fecha" type="date"></div>
+      <div class="field"><label>Monto ($)</label><input id="bec-p-monto" type="number" step="0.01" min="0"></div>
+      <div class="field"><label>Referencia bancaria</label><input id="bec-p-ref"></div>
+      <div class="field full"><label>Comprobante (nombre del PDF)</label><input id="bec-p-pdf" placeholder="Ej. 080726_BecaAGMaravilla-2do2026.pdf"></div>
+      <div class="field full"><label>Nota</label><input id="bec-p-nota"></div>
+    </div>
+    <input type="hidden" id="bec-p-bid">
+    <div class="btn-row"><button class="btn btn-p" onclick="becGuardarPago()">Guardar pago</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL BECAS: seguimiento académico -->
+<div class="modal-bg" id="modal-bec-seg">
+  <div class="modal" style="max-width:560px">
+    <h3>Seguimiento académico / autorización</h3>
+    <p id="bec-s-info"></p>
+    <div class="cxp-form">
+      <div class="field"><label>Fecha</label><input id="bec-s-fecha" type="date"></div>
+      <div class="field"><label>Decisión del P. Jaime</label><select id="bec-s-decision"><option>Continuar beca</option><option>Pendiente de notas</option><option>Suspender beca</option><option>Finalizar beca</option><option>Otra</option></select></div>
+      <div class="field full"><label>Documento presentado</label><input id="bec-s-doc" placeholder="Ej. Informe de notas III período"></div>
+      <div class="field"><label>Período</label><input id="bec-s-periodo" placeholder="Ej. III período 2026"></div>
+      <div class="field"><label>Archivo</label><input id="bec-s-archivo" placeholder="Ej. 221026_solicitud01.jpeg"></div>
+      <div class="field full"><label>Resultado relevante</label><textarea id="bec-s-resultado" rows="2"></textarea></div>
+    </div>
+    <input type="hidden" id="bec-s-bid">
+    <div class="btn-row"><button class="btn btn-p" onclick="becGuardarSeg()">Guardar</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL BECAS: montos -->
+<div class="modal-bg" id="modal-bec-montos">
+  <div class="modal" style="max-width:520px">
+    <h3>Montos por entrega</h3>
+    <div class="cxp-form">
+      <div class="field full"><label>Año de control</label><input id="bec-mt-anio" type="number"></div>
+      <div class="field"><label>Universidad — 1ª / 2ª / 3ª</label><input id="bec-mt-u" placeholder="200, 150, 90"></div>
+      <div class="field"><label>Bachillerato — 1ª / 2ª / 3ª</label><input id="bec-mt-b" placeholder="140, 90, 90"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-p" onclick="becGuardarMontos()">Guardar</button><button class="btn btn-s" onclick="closeModal()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL BECAS: informe -->
+<div class="modal-bg" id="modal-bec-informe">
+  <div class="modal modal-xl">
+    <h3>📄 Informe de becas</h3>
+    <div id="bec-inf-body"></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-p" onclick="becImprimir()">Imprimir o guardar PDF</button>
+      <button class="btn btn-s" onclick="becCSV()">Descargar CSV de pagos</button>
       <button class="btn btn-s" onclick="closeModal()">Cerrar</button>
     </div>
   </div>
@@ -3038,7 +3167,8 @@ function showSec(id) {
   if(id==='comprobantes') renderComprobantes();
   if(id==='comparativo')  renderComparativo();
   if(id==='presupuesto')  renderPresupuesto();
-  if(id==='cxp')          renderCxp();
+  if(id==='cxp')          { becSincronizar(); renderCxp(); }
+  if(id==='becas')        { becSincronizar(); renderBecas(); }
 }
 
 // ================================================================
@@ -3252,6 +3382,8 @@ function cxpQuitarAbono(oid, aid) {
   if (!cxpReq()) return;
   const o = CXP.obl.find(x=>x.id===oid); if (!o) return;
   if (!confirm('¿Quitar este abono? El saldo de la cuenta aumentará.')) return;
+  const ab = o.abonos.find(a=>a.id===aid);
+  if (ab && ab.becPago && BEC) { const bp = BEC.pagos.find(p=>p.id===ab.becPago); if (bp && bp.gasto) (BEC.ignorar=BEC.ignorar||[]).push(bp.gasto); BEC.pagos = BEC.pagos.filter(p=>p.id!==ab.becPago); becGuardar(); }
   o.abonos = o.abonos.filter(a=>a.id!==aid); cxpGuardar(); renderCxp();
 }
 
@@ -3334,11 +3466,424 @@ function cxpImportar(inp) {
   r.readAsText(f);
 }
 
+// ================================================================
+// BECAS
+// Se guarda aparte de DATA (localStorage 'parroquia_becas_v1'), igual que Cuentas por pagar.
+// Use ⬇ Respaldo para guardar una copia.
+// ================================================================
+const BEC_KEY = 'parroquia_becas_v1';
+const BEC_ESTADOS = ['Activa','Por confirmar','Suspendida','Finalizada'];
+let BEC = null;
+let becAbiertos = {};
+
+function becSemilla() {
+  // Datos de la hoja Becas_26 (Calendario_Gastos2026.xlsx) y comprobantes Transfer365 de 2026
+  const b = (id,nombre,nivel,centro,carrera,banco,cuenta,titular,estado,nota) => ({id,nombre,nivel,centro,carrera,banco,cuenta,titular,estado,nota});
+  const becados = [
+    b('b01','Ana Graciela Maravilla Vásquez','Universidad','Universidad Pedagógica de El Salvador (UPED)','Lic. en Ciencias de la Educación, esp. Idioma Inglés','Banco de América Central','127477248','Rosa Argelia Vásquez (mamá)','Activa','Becas_26 indicaba cuenta Agrícola 003030429274; en 2026 se paga a BAC.'),
+    b('b02','Daniel Neftalí Ortiz Gámez','Universidad','','','Banco Agrícola','1520070050','Daniel Ortiz','Activa','La 1ª entrega se pagó a la cuenta de Claudia Elizabeth Reyes; la 2ª a cuenta propia.'),
+    b('b06','Manuel Ernesto Luna Hernández','Universidad','','','Banco Agrícola','3300972213','Manuel Ernesto Luna Castaneda','Activa','Becas_26 lo tenía como bachillerato; en 2026 recibe monto universitario.'),
+    b('b08','Carlos Fernando Maravilla Vásquez','Bachillerato','Colegio Santa Isabel, Cojutepeque','Bachillerato General, sección B','Banco de América Central','127477248','Rosa Argelia Vásquez (mamá)','Activa',''),
+    b('b09','Luis Mario Marroquín Chávez','Bachillerato','Instituto Nacional Técnico Industrial (INTI)','Bachillerato técnico, código ECA1A','Banco Cuscatlán','001401000398772','Aminta Yesenia Chávez Chacón (mamá)','Activa',''),
+    b('b10','Moris Alejandro Bonilla Bonilla','Bachillerato','','','Fedecrédito','030000294192','Blanca Lilian Bonilla Hernández','Activa','No aparece en el listado Becas_26.'),
+    b('b03','Dayana Michelle Díaz Alfaro','Bachillerato','','','BAC','119465904','Deysi Marleni Alfaro (mamá)','Por confirmar','Sin pagos en 2026. Último pago: julio 2025.'),
+    b('b04','Helen Reyes de Hernández','Universidad','','','Promerica','10000034015634','','Por confirmar','Sin pagos en 2025 ni 2026.'),
+    b('b05','Leydi Melissa Guerra Aquino','Universidad','','','Promerica','20000028009339','Katherine Stefan Aguilar Cruz','Por confirmar','Sin pagos en 2026. Último pago: febrero 2025.'),
+    b('b07','Mayra Yaneth Gómez García','Universidad','','','Banco Agrícola','3030423573','','Por confirmar','Sin pagos en 2026. Último pago: noviembre 2025.'),
+    b('b11','Franklin Ronaldo de la O León','Universidad','','','BAC','128426194','Franklin Ronaldo de la O León','Por confirmar','Sin pagos en 2026. Último pago: febrero 2025.'),
+    b('b12','Anthony Eduardo Mendoza Ramírez','Bachillerato','','','BAC','129516779','Rebeca Gabriela Ramírez Teshe','Por confirmar','Sin pagos en 2026. Último pago: julio 2025.'),
+    b('b13','Alejandra Lissette Urquilla Santos','Universidad','','','Banco Agrícola','003030455966','','Por confirmar','Sin pagos en 2025 ni 2026.'),
+    b('b14','Mercedes Caridad Castillo Acosta','Universidad','','','','','','Por confirmar','Sin pagos en 2025 ni 2026.')
+  ];
+  const p = (bid,fecha,entrega,monto,ref,pdf) => ({id:'p-'+bid+'-'+entrega+'-'+fecha, bid, fecha, entrega, monto, ref, pdf, nota:'', gasto:''});
+  const pagos = [
+    p('b01','2026-01-31','1ª',200,'488144286','310126_BecaAnaMaravillaVásqeuz.pdf'),
+    p('b08','2026-01-31','1ª',140,'488144585','310126_BecaCarlosMaravillaVásquez.pdf'),
+    p('b02','2026-01-31','1ª',200,'488147066','310126_BecaDanielOrtíz.pdf'),
+    p('b06','2026-01-31','1ª',200,'488147381','310126_BecaManuelLunaH.pdf'),
+    p('b09','2026-01-31','1ª',140,'488149430','310126_BecaLuisMarroquinC.pdf'),
+    p('b10','2026-02-05','1ª',140,'489664926','050226_BecaAlejandroBonilla.pdf'),
+    p('b01','2026-07-08','2ª',150,'11863813','080726_BecaAGMaravilla-2do2026.pdf'),
+    p('b08','2026-07-08','2ª',90,'11863921','080726_BecaCFMarailla-2do2026.pdf'),
+    p('b06','2026-07-08','2ª',150,'11863990','080726_BecaMELuna-2do2026.pdf'),
+    p('b02','2026-07-08','2ª',150,'11864038','080726_BecaDNOrtíz-2do2026.pdf'),
+    p('b09','2026-07-08','2ª',90,'11864073','080726_BecaLMMarroquin-2do2026.pdf'),
+    p('b10','2026-07-08','2ª',90,'11864130','080726_BecaMABonilla-2do2026.pdf')
+  ];
+  const s = (bid,doc,periodo,resultado,archivo) => ({id:'s-'+bid+'-20261016', bid, fecha:'2026-10-16', doc, periodo, resultado, decision:'Continuar beca', archivo});
+  const seg = [
+    s('b09','Informe de notas, Instituto Nacional Técnico Industrial','III período 2026','Total 75.3 puntos; conducta del III período: 5 (marcada con círculo)','221026_solicitud01.jpeg'),
+    s('b08','Informe de calificaciones, Colegio Santa Isabel','III período 2026','Notas de 8.1 a 9.8 en el III período; conducta E/MB','221026_solicitud02.jpeg'),
+    s('b01','Notas del ciclo, portal UPED','Ciclo II-2026 (parciales)','CUM 8.6; laboratorio 9.2–10, parcial 8.0–10','221026_solicitud03.jpeg')
+  ];
+  return { anio:2026, montos:{Universidad:[200,150,90], Bachillerato:[140,90,90]}, becados, pagos, seg };
+}
+function becCargar() {
+  try {
+    const s = localStorage.getItem(BEC_KEY);
+    if (s) { const o = JSON.parse(s); if (o && Array.isArray(o.becados)) { BEC = o; return; } }
+  } catch(e) {}
+  BEC = becSemilla();
+  becGuardar();
+}
+function becGuardar() { try { localStorage.setItem(BEC_KEY, JSON.stringify(BEC)); } catch(e) {} }
+const becNum = s => String(s||'').split(',').map(x=>r2(parseFloat(x)||0));
+const becPagosB = (bid, anio) => BEC.pagos.filter(p => p.bid===bid && (!anio || (p.fecha||'').slice(0,4)===String(anio)));
+const becPagado = bid => r2(becPagosB(bid, BEC.anio).reduce((s,p)=>s+(+p.monto||0),0));
+const becAsignado = b => b.estado==='Activa' ? r2((BEC.montos[b.nivel]||[]).reduce((s,v)=>s+v,0)) : 0;
+const becEntrega = (bid, e) => r2(becPagosB(bid, BEC.anio).filter(p=>p.entrega===e).reduce((s,p)=>s+(+p.monto||0),0));
+function becProxima(b) {
+  if (b.estado!=='Activa') return '';
+  for (const e of ['1ª','2ª','3ª']) if (becEntrega(b.id, e) <= 0) return e;
+  return '';
+}
+const becUltSeg = bid => BEC.seg.filter(s=>s.bid===bid).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))[0];
+function becId(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function renderBecas() {
+  if (!$('bec-tbl') || !BEC) return;
+  $('bec-anio-t').textContent = BEC.anio;
+  const act = BEC.becados.filter(b=>b.estado==='Activa');
+  const asig = r2(act.reduce((s,b)=>s+becAsignado(b),0));
+  const pag = r2(BEC.becados.reduce((s,b)=>s+becPagado(b.id),0));
+  const sal = r2(act.reduce((s,b)=>s+Math.max(becAsignado(b)-becPagado(b.id),0),0));
+  const porConf = BEC.becados.filter(b=>b.estado==='Por confirmar').length;
+  $('bec-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-l">Becas activas</div><div class="kpi-v b">${act.length}</div><div class="kpi-s">${porConf} por confirmar</div></div>
+    <div class="kpi"><div class="kpi-l">Asignado ${BEC.anio}</div><div class="kpi-v">${cxpM(asig)}</div><div class="kpi-s">Tres entregas por becado activo</div></div>
+    <div class="kpi"><div class="kpi-l">Pagado ${BEC.anio}</div><div class="kpi-v g">${cxpM(pag)}</div><div class="kpi-s">${BEC.pagos.filter(p=>(p.fecha||'').slice(0,4)===String(BEC.anio)).length} transferencias</div></div>
+    <div class="kpi"><div class="kpi-l">Saldo pendiente</div><div class="kpi-v r">${cxpM(sal)}</div><div class="kpi-s">Por pagar a becas activas</div></div>`;
+  // Próxima entrega
+  const grupos = {};
+  act.forEach(b => { const e = becProxima(b); if (e) (grupos[e]=grupos[e]||[]).push(b); });
+  const eKey = Object.keys(grupos).sort()[0];
+  if (eKey) {
+    const idx = {'1ª':0,'2ª':1,'3ª':2}[eKey];
+    const lst = grupos[eKey], tot = r2(lst.reduce((s,b)=>s+(BEC.montos[b.nivel]||[])[idx],0));
+    const aut = lst.filter(b => becOblAbiertas().some(o=>o.becBid===b.id));
+    $('bec-prox').innerHTML = `
+      <div><div class="kpi-l">Próxima entrega: ${eKey} — ${lst.length} becado(s)</div>
+        <div class="kpi-v">${cxpM(tot)}</div>
+        <div class="kpi-s">Autorizados por el P. Jaime (en Cuentas por pagar): ${aut.length ? aut.map(b=>{const w=b.nombre.split(' ');return bdjEsc(w[0]+' '+(w.length>3?w[2]:(w[1]||'')));}).join(', ') : 'ninguno aún'}${lst.length>aut.length?` · Sin autorización: ${lst.filter(b=>!aut.includes(b)).map(b=>bdjEsc(b.nombre.split(' ')[0])).join(', ')}`:''}</div></div>`;
+    $('bec-prox').style.display = '';
+  } else { $('bec-prox').style.display = 'none'; }
+  if ($('bec-notif')) $('bec-notif').innerHTML = becAvisos.length ? `<div class="card" style="border-left:4px solid var(--verde2);margin-bottom:1.25rem"><b>Actualizado automáticamente</b><ul style="margin:6px 0 6px 18px">${becAvisos.map(a=>`<li>${bdjEsc(a)}</li>`).join('')}</ul><button class="btn btn-s" onclick="becQuitarAviso()">Entendido</button></div>` : '';
+  // Tabla
+  const fe = $('bec-f-estado').value, fn = $('bec-f-nivel').value, q = ($('bec-f-q').value||'').toLowerCase();
+  const lista = BEC.becados.filter(b => (!fe || b.estado===fe) && (!fn || b.nivel===fn) &&
+      (!q || `${b.nombre} ${b.centro} ${b.carrera} ${b.titular}`.toLowerCase().includes(q)))
+    .sort((a,b)=>BEC_ESTADOS.indexOf(a.estado)-BEC_ESTADOS.indexOf(b.estado) || a.nivel.localeCompare(b.nivel) || a.nombre.localeCompare(b.nombre));
+  let h = `<tr><th>Becado</th><th class="opc">Cuenta destino</th><th class="n">1ª</th><th class="n">2ª</th><th class="n">3ª</th><th class="n">Pagado</th><th class="n">Saldo</th><th>Estado</th><th>Acciones</th></tr>`;
+  if (!lista.length) h += `<tr><td colspan="9" style="padding:18px;color:var(--txt3)">No hay becados en este filtro.</td></tr>`;
+  lista.forEach(b => {
+    const ent = ['1ª','2ª','3ª'].map(e=>becEntrega(b.id,e)), pg = becPagado(b.id), sl = Math.max(r2(becAsignado(b)-pg),0);
+    const st = b.estado==='Activa' ? (sl<=0.005?{k:'pag',t:'Completa'}:{k:'abon',t:'Activa'}) : b.estado==='Por confirmar' ? {k:'pend',t:'Por confirmar'} : {k:'venc',t:b.estado};
+    const us = becUltSeg(b.id);
+    const nP = becPagosB(b.id).length, nS = BEC.seg.filter(s=>s.bid===b.id).length;
+    h += `<tr>
+      <td><b>${bdjEsc(b.nombre)}</b><div class="bec-sub">${bdjEsc(b.nivel)}${b.centro?' · '+bdjEsc(b.centro):''}</div>
+        ${us?`<div class="bec-sub">Últ. autorización: ${cxpF(us.fecha)} — ${bdjEsc(us.decision)}</div>`:''}
+        ${becOblAbiertas().filter(o=>o.becBid===b.id).map(o=>`<div class="bec-sub" style="color:var(--dorado);font-weight:600">💳 Autorizada, por pagar: ${o.becEntrega} entrega ${cxpM(cxpSaldo(o))}</div>`).join('')}</td>
+      <td class="opc">${bdjEsc(b.banco||'—')}<div class="bec-sub">${bdjEsc(b.cuenta||'')} ${b.titular?'· '+bdjEsc(b.titular):''}</div></td>
+      ${ent.map(v=>`<td class="n"><span class="bec-ent ${v?'':'no'}">${v?cxpM(v):'—'}</span></td>`).join('')}
+      <td class="n">${cxpM(pg)}</td><td class="n"><b>${b.estado==='Activa'?cxpM(sl):'—'}</b></td>
+      <td><span class="cxp-st ${st.k}">${st.t}</span></td>
+      <td><div class="cxp-acc">
+        ${b.estado==='Activa' && sl>0.005?`<button class="btn btn-p" onclick="becPagar('${b.id}')">Pagar</button>`:''}
+        <button class="btn btn-s" onclick="becSeg('${b.id}')">+ Notas</button>
+        <button class="btn btn-s" onclick="becToggle('${b.id}')">Historial (${nP+nS})</button>
+        <button class="btn btn-s" onclick="becEditar('${b.id}')">Editar</button>
+      </div></td></tr>`;
+    if (becAbiertos[b.id]) {
+      const ev = [
+        ...becPagosB(b.id).map(p=>({f:p.fecha, html:`💵 ${cxpF(p.fecha)} — ${p.entrega} entrega ${cxpM(p.monto)}${p.ref?` · ref. ${bdjEsc(p.ref)}`:''}${p.pdf?` · 📄 ${bdjEsc(p.pdf)}`:''}${p.nota?` · ${bdjEsc(p.nota)}`:''}`,
+            del:`becQuitarPago('${p.id}')`})),
+        ...BEC.seg.filter(s=>s.bid===b.id).map(s=>({f:s.fecha, html:`<span class="bec-seg">🎓 ${cxpF(s.fecha)} — <b>${bdjEsc(s.decision)}</b>${s.doc?` · ${bdjEsc(s.doc)}`:''}${s.periodo?` (${bdjEsc(s.periodo)})`:''}${s.resultado?`<div class="bec-sub">${bdjEsc(s.resultado)}</div>`:''}</span>`,
+            del:`becQuitarSeg('${s.id}')`}))
+      ].sort((a,c)=>(a.f||'').localeCompare(c.f||''));
+      h += ev.map(x=>`<tr class="sub"><td colspan="8">${x.html}</td><td><button class="btn btn-s" style="padding:3px 9px;font-size:11px" onclick="${x.del}">Quitar</button></td></tr>`).join('')
+        || `<tr class="sub"><td colspan="9">Sin pagos ni seguimiento registrados.</td></tr>`;
+      if (b.nota) h += `<tr class="sub"><td colspan="9">📝 ${bdjEsc(b.nota)}</td></tr>`;
+    }
+  });
+  $('bec-tbl').innerHTML = h;
+}
+function becToggle(id) { becAbiertos[id] = !becAbiertos[id]; renderBecas(); }
+// ---- Becado: nuevo / editar ----
+function becNuevo() {
+  if (!cxpReq()) return;
+  $('bec-m-titulo').textContent = 'Nuevo becado';
+  ['id','nombre','centro','carrera','banco','cuenta','titular','nota'].forEach(k=>$('bec-m-'+k).value='');
+  $('bec-m-nivel').value = 'Universidad'; $('bec-m-estado').value = 'Activa';
+  $('bec-m-del').style.display = 'none';
+  showModal('modal-bec');
+}
+function becEditar(id) {
+  if (!cxpReq()) return;
+  const b = BEC.becados.find(x=>x.id===id); if (!b) return;
+  $('bec-m-titulo').textContent = 'Editar becado';
+  ['id','nombre','nivel','estado','centro','carrera','banco','cuenta','titular','nota'].forEach(k=>$('bec-m-'+k).value=b[k]||'');
+  $('bec-m-del').style.display = '';
+  showModal('modal-bec');
+}
+function becGuardarB() {
+  const nombre = $('bec-m-nombre').value.trim();
+  if (!nombre) { alert('Escriba el nombre del becado.'); return; }
+  const datos = {}; ['nombre','nivel','estado','centro','carrera','banco','cuenta','titular','nota'].forEach(k=>datos[k]=$('bec-m-'+k).value.trim());
+  const id = $('bec-m-id').value;
+  if (id) Object.assign(BEC.becados.find(x=>x.id===id), datos);
+  else BEC.becados.push({id:becId('b'), ...datos});
+  becGuardar(); closeModal(); renderBecas();
+}
+function becEliminar() {
+  const id = $('bec-m-id').value, b = BEC.becados.find(x=>x.id===id); if (!b) return;
+  const n = BEC.pagos.filter(p=>p.bid===id).length;
+  if (!confirm(`¿Eliminar a ${b.nombre}${n?` y sus ${n} pago(s) registrados`:''}? Si solo dejó de recibir beca, es mejor cambiar el estado a “Finalizada”.`)) return;
+  BEC.becados = BEC.becados.filter(x=>x.id!==id);
+  BEC.pagos = BEC.pagos.filter(p=>p.bid!==id); BEC.seg = BEC.seg.filter(s=>s.bid!==id);
+  becGuardar(); closeModal(); renderBecas();
+}
+// ---- Pagos ----
+let becGastosCand = [];
+function becPagar(id) {
+  if (!cxpReq()) return;
+  const b = BEC.becados.find(x=>x.id===id); if (!b) return;
+  $('bec-p-bid').value = id;
+  $('bec-p-info').innerHTML = `<b>${bdjEsc(b.nombre)}</b> — ${bdjEsc(b.nivel)}<br>${bdjEsc(b.banco||'')} ${bdjEsc(b.cuenta||'')} ${b.titular?'· '+bdjEsc(b.titular):''}<br>Pagado ${cxpM(becPagado(id))} · <b>saldo ${cxpM(Math.max(becAsignado(b)-becPagado(id),0))}</b>`;
+  $('bec-p-entrega').value = becProxima(b) || 'Extra';
+  $('bec-p-fecha').value = cxpHoy(); ['ref','pdf','nota'].forEach(k=>$('bec-p-'+k).value='');
+  becMontoEntrega();
+  const usados = new Set(BEC.pagos.map(p=>p.gasto).filter(Boolean));
+  const ap = b.nombre.toLowerCase().split(' ').filter(w=>w.length>3);
+  becGastosCand = (DATA.gastos||[]).filter(g => {
+    const t = `${g.sub||''} ${g.desc||''} ${g.cuenta||''} ${g.pdf||''}`.toLowerCase();
+    return /beca/.test(t) && !usados.has(cxpGKey(g));
+  }).sort((x,y) => {
+    const sx = ap.filter(w=>`${x.desc} ${x.pdf}`.toLowerCase().includes(w)).length, sy = ap.filter(w=>`${y.desc} ${y.pdf}`.toLowerCase().includes(w)).length;
+    return sy-sx || y.mes-x.mes;
+  });
+  $('bec-p-gasto').innerHTML = '<option value="">— Ninguno (escribir manualmente) —</option>' +
+    becGastosCand.map((g,i)=>`<option value="${i}">${MESES3[g.mes]} ${g.fecha||''} · ${bdjEsc(g.desc)} · ${cxpM(g.valor)}</option>`).join('');
+  showModal('modal-bec-pago');
+}
+function becMontoEntrega() {
+  const b = BEC.becados.find(x=>x.id===$('bec-p-bid').value); if (!b) return;
+  const i = {'1ª':0,'2ª':1,'3ª':2}[$('bec-p-entrega').value];
+  $('bec-p-monto').value = i===undefined ? '' : ((BEC.montos[b.nivel]||[])[i] || '');
+}
+function becElegirGasto() {
+  const i = $('bec-p-gasto').value; if (i==='') return;
+  const g = becGastosCand[+i]; if (!g) return;
+  $('bec-p-monto').value = r2(g.valor); $('bec-p-pdf').value = g.pdf||'';
+  const m = /^(\d{1,2})\/(\d{1,2})$/.exec(g.fecha||'');
+  $('bec-p-fecha').value = m ? `${BEC.anio}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : $('bec-p-fecha').value;
+}
+function becGuardarPago() {
+  const bid = $('bec-p-bid').value, b = BEC.becados.find(x=>x.id===bid); if (!b) return;
+  const monto = r2(parseFloat($('bec-p-monto').value)||0), fecha = $('bec-p-fecha').value, entrega = $('bec-p-entrega').value;
+  if (monto<=0 || !fecha) { alert('Indique la fecha y un monto mayor que cero.'); return; }
+  if (entrega!=='Extra' && becPagosB(bid, fecha.slice(0,4)).some(p=>p.entrega===entrega) &&
+      !confirm(`${b.nombre} ya tiene registrada la ${entrega} entrega de ${fecha.slice(0,4)}. ¿Registrar otro pago igual?`)) return;
+  const i = $('bec-p-gasto').value;
+  const g = (i!=='' && becGastosCand[+i]) ? cxpGKey(becGastosCand[+i]) : '';
+  BEC.pagos.push({id:becId('p'), bid, fecha, entrega, monto, ref:$('bec-p-ref').value.trim(), pdf:$('bec-p-pdf').value.trim(), nota:$('bec-p-nota').value.trim(), gasto:g});
+  becGuardar(); becSincronizar(); closeModal(); becAbiertos[bid]=true; renderBecas();
+}
+function becQuitarPago(pid) {
+  if (!cxpReq()) return;
+  if (!confirm('¿Quitar este pago? El saldo del becado aumentará.')) return;
+  const bp = BEC.pagos.find(p=>p.id===pid);
+  if (bp && bp.gasto) (BEC.ignorar=BEC.ignorar||[]).push(bp.gasto);
+  if (bp && bp.cxpAbono) { CXP.obl.forEach(o=>{ o.abonos=(o.abonos||[]).filter(a=>a.id!==bp.cxpAbono); }); cxpGuardar(); }
+  BEC.pagos = BEC.pagos.filter(p=>p.id!==pid); becGuardar(); renderBecas();
+}
+// ---- Seguimiento académico ----
+function becSeg(id) {
+  if (!cxpReq()) return;
+  const b = BEC.becados.find(x=>x.id===id); if (!b) return;
+  $('bec-s-bid').value = id;
+  $('bec-s-info').innerHTML = `<b>${bdjEsc(b.nombre)}</b> — ${bdjEsc(b.centro||b.nivel)}`;
+  $('bec-s-fecha').value = cxpHoy(); $('bec-s-decision').value = 'Continuar beca';
+  ['doc','periodo','archivo','resultado'].forEach(k=>$('bec-s-'+k).value='');
+  showModal('modal-bec-seg');
+}
+function becGuardarSeg() {
+  const bid = $('bec-s-bid').value, fecha = $('bec-s-fecha').value;
+  if (!fecha) { alert('Indique la fecha.'); return; }
+  const s = {id:becId('s'), bid, fecha}; ['decision','doc','periodo','archivo','resultado'].forEach(k=>s[k]=$('bec-s-'+k).value.trim());
+  BEC.seg.push(s);
+  const b = BEC.becados.find(x=>x.id===bid);
+  if (b && /suspender/i.test(s.decision)) b.estado = 'Suspendida';
+  if (b && /finalizar/i.test(s.decision)) b.estado = 'Finalizada';
+  if (b && /continuar/i.test(s.decision) && b.estado==='Por confirmar') b.estado = 'Activa';
+  becGuardar(); becSincronizar(); closeModal(); becAbiertos[bid]=true; renderBecas();
+}
+function becQuitarSeg(sid) {
+  if (!cxpReq()) return;
+  if (!confirm('¿Quitar este registro de seguimiento?')) return;
+  const sg = BEC.seg.find(s=>s.id===sid);
+  if (sg && sg.cxpId) { const o = CXP.obl.find(x=>x.id===sg.cxpId); if (o && !(o.abonos||[]).length) { CXP.obl = CXP.obl.filter(x=>x.id!==o.id); cxpGuardar(); } }
+  BEC.seg = BEC.seg.filter(s=>s.id!==sid); becGuardar(); renderBecas();
+}
+// ---- Montos ----
+function becMontos() {
+  if (!cxpReq()) return;
+  $('bec-mt-anio').value = BEC.anio;
+  $('bec-mt-u').value = (BEC.montos.Universidad||[]).join(', ');
+  $('bec-mt-b').value = (BEC.montos.Bachillerato||[]).join(', ');
+  showModal('modal-bec-montos');
+}
+function becGuardarMontos() {
+  const u = becNum($('bec-mt-u').value), bq = becNum($('bec-mt-b').value), anio = +$('bec-mt-anio').value;
+  if (u.length!==3 || bq.length!==3 || !anio) { alert('Escriba el año y tres montos para cada nivel, separados por comas.'); return; }
+  BEC.anio = anio; BEC.montos = {Universidad:u, Bachillerato:bq};
+  becGuardar(); closeModal(); renderBecas();
+}
+// ---- Informe ----
+function becInformeHTML() {
+  const act = BEC.becados.filter(b=>b.estado==='Activa');
+  let tE=[0,0,0], tP=0, tA=0, tS=0;
+  let h = `<p><b>Parroquia Cristo Redentor — Consejo Económico</b><br>Control de becas ${BEC.anio}, al ${cxpF(cxpHoy())}.</p>
+    <table class="cxp-tbl" style="margin-bottom:14px"><tr><th>Becado</th><th>Nivel / centro de estudio</th><th class="n">1ª</th><th class="n">2ª</th><th class="n">3ª</th><th class="n">Pagado</th><th class="n">Asignado</th><th class="n">Saldo</th></tr>`;
+  act.forEach(b => {
+    const e = ['1ª','2ª','3ª'].map(x=>becEntrega(b.id,x)), pg = becPagado(b.id), as = becAsignado(b), sl = Math.max(r2(as-pg),0);
+    e.forEach((v,i)=>tE[i]+=v); tP+=pg; tA+=as; tS+=sl;
+    h += `<tr><td>${bdjEsc(b.nombre)}</td><td>${bdjEsc(b.nivel)}${b.centro?' — '+bdjEsc(b.centro):''}</td>${e.map(v=>`<td class="n">${v?cxpM(v):'—'}</td>`).join('')}<td class="n">${cxpM(pg)}</td><td class="n">${cxpM(as)}</td><td class="n"><b>${cxpM(sl)}</b></td></tr>`;
+  });
+  h += `<tr><th colspan="2">Total</th>${tE.map(v=>`<th class="n">${cxpM(v)}</th>`).join('')}<th class="n">${cxpM(tP)}</th><th class="n">${cxpM(tA)}</th><th class="n">${cxpM(tS)}</th></tr></table>`;
+  const pg = BEC.pagos.filter(p=>(p.fecha||'').slice(0,4)===String(BEC.anio)).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  h += `<table class="cxp-tbl" style="margin-bottom:14px"><tr><th colspan="5">Detalle de pagos ${BEC.anio}</th></tr><tr><th>Fecha</th><th>Becado</th><th>Entrega</th><th>Referencia</th><th class="n">Monto</th></tr>` +
+    pg.map(p=>{ const b = BEC.becados.find(x=>x.id===p.bid); return `<tr><td>${cxpF(p.fecha)}</td><td>${bdjEsc(b?b.nombre:'(eliminado)')}</td><td>${p.entrega}</td><td>${bdjEsc(p.ref||'')}</td><td class="n">${cxpM(p.monto)}</td></tr>`; }).join('') + `</table>`;
+  const otros = BEC.becados.filter(b=>b.estado!=='Activa');
+  if (otros.length) h += `<p class="bdj-nota">No incluidos (no activos): ${otros.map(b=>`${bdjEsc(b.nombre)} (${b.estado.toLowerCase()})`).join(', ')}.</p>`;
+  return h;
+}
+function becInforme() { $('bec-inf-body').innerHTML = becInformeHTML(); showModal('modal-bec-informe'); }
+function becImprimir() {
+  const w = window.open('', '_blank'); if (!w) { alert('Permita las ventanas emergentes para imprimir.'); return; }
+  w.document.write(`<html><head><meta charset="utf-8"><title>Control de becas ${BEC.anio}</title><style>
+    body{font-family:Inter,Arial,sans-serif;font-size:12px;color:#111;padding:24px}
+    table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border-bottom:1px solid #ddd;padding:5px 8px;text-align:left}
+    th{background:#f2f4f7}.n{text-align:right}.bdj-nota{color:#666}</style></head><body>${becInformeHTML()}</body></html>`);
+  w.document.close(); w.focus(); setTimeout(()=>w.print(), 300);
+}
+function becCSV() {
+  const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const rows = [['Fecha','Becado','Nivel','Centro de estudio','Entrega','Monto','Banco','Cuenta','Titular','Referencia','Comprobante','Nota'].map(q).join(',')];
+  BEC.pagos.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(p => {
+    const b = BEC.becados.find(x=>x.id===p.bid)||{};
+    rows.push([p.fecha,b.nombre,b.nivel,b.centro,p.entrega,p.monto,b.banco,b.cuenta,b.titular,p.ref,p.pdf,p.nota].map(q).join(','));
+  });
+  cxpDescargar('pagos_becas_'+cxpHoy()+'.csv', '﻿'+rows.join('\n'), 'text/csv;charset=utf-8');
+}
+function becExportar() { cxpDescargar('respaldo_becas_'+cxpHoy()+'.json', JSON.stringify(BEC,null,2), 'application/json'); }
+function becImportar(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const o = JSON.parse(r.result);
+      if (!o || !Array.isArray(o.becados) || !Array.isArray(o.pagos)) throw new Error('formato');
+      if (!confirm(`El respaldo trae ${o.becados.length} becado(s) y ${o.pagos.length} pago(s), y reemplazará los actuales. ¿Continuar?`)) return;
+      o.seg = o.seg || []; BEC = o; becGuardar(); renderBecas();
+    } catch(e) { alert('No se pudo leer el respaldo. Use un archivo .json generado con “Respaldo”.'); }
+    inp.value = '';
+  };
+  r.readAsText(f);
+}
+
+// ---- Autorizaciones del P. Jaime → Cuentas por pagar, y aplicación automática de pagos ----
+// Cada seguimiento con decisión "Continuar beca" crea UNA cuenta por pagar (acreedor "Becas")
+// por la siguiente entrega pendiente del becado. Solo se crean para lo autorizado.
+// Cuando aparece el gasto de la transferencia (cuenta Becas) se aplica solo como abono
+// y como pago de la beca. Lo que no se pueda identificar con certeza queda para hacerlo a mano.
+let becAvisos = [];
+const becNorm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const BEC_STOP = new Set(['beca','nueva','de','la','del','los','las','y','para','universidad','colegio','bachillerato']);
+function becGFecha(g) {
+  const f = String(g.fecha||'');
+  if (/^\d{4}-\d{2}-\d{2}/.test(f)) return f.slice(0,10);
+  const m = /^(\d{1,2})\/(\d{1,2})/.exec(f);
+  if (m) return `${BEC.anio}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  return `${BEC.anio}-${String(g.mes||1).padStart(2,'0')}-01`;
+}
+function becMatchBecado(g) {
+  const t = becNorm(`${g.sub||''} ${g.desc||''}`);
+  let best = null, bestSc = 0, empate = false;
+  BEC.becados.forEach(b => {
+    const w = becNorm(b.nombre).split(/\s+/).filter(x=>x.length>2 && !BEC_STOP.has(x));
+    if (!w.length || !t.includes(w[0])) return;            // el primer nombre es obligatorio
+    const sc = w.filter(x=>t.includes(x)).length;
+    if (sc > bestSc) { best = b; bestSc = sc; empate = false; } else if (sc === bestSc) empate = true;
+  });
+  return (best && bestSc >= 2 && !empate) ? best : null;
+}
+function becEsGastoBeca(g) { return g.cuenta==='Becas' || /beca/.test(becNorm(`${g.desc||''} ${g.sub||''} ${g.pdf||''}`)); }
+function becOblAbiertas() { return CXP.obl.filter(o => o.origen==='beca' && cxpSaldo(o) > 0.005); }
+function becCrearCxPDesdeAutorizaciones() {
+  let n = 0;
+  BEC.seg.filter(s => /continuar/i.test(s.decision||'') && !s.cxpId && (s.fecha||'').slice(0,4)===String(BEC.anio)).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(s => {
+    const b = BEC.becados.find(x=>x.id===s.bid);
+    if (!b || b.estado!=='Activa') return;
+    const cubiertas = new Set([...becPagosB(b.id, BEC.anio).map(p=>p.entrega), ...CXP.obl.filter(o=>o.origen==='beca' && o.becBid===b.id && o.becAnio===BEC.anio).map(o=>o.becEntrega)]);
+    const ent = ['1ª','2ª','3ª'].find(e=>!cubiertas.has(e));
+    if (!ent) { s.cxpId = '-'; return; }
+    const monto = (BEC.montos[b.nivel]||[])[{'1ª':0,'2ª':1,'3ª':2}[ent]] || 0;
+    if (monto <= 0) return;
+    const id = 'beca-' + s.id;
+    CXP.obl.push({id, acreedor:'Becas', tipo:'Beca', concepto:`Beca ${ent} entrega ${BEC.anio} — ${b.nombre}`, monto, fecha:s.fecha, vence:'',
+      clave:'beca', nota:`Autorizada por el P. Jaime el ${cxpF(s.fecha)}${s.archivo?' · '+s.archivo:''}. Pagar a ${b.banco||''} ${b.cuenta||''} ${b.titular?'('+b.titular+')':''}`.trim(),
+      origen:'beca', becBid:b.id, becEntrega:ent, becAnio:BEC.anio, becSeg:s.id, abonos:[]});
+    s.cxpId = id; n++;
+    becAvisos.push(`Cuenta por pagar creada: ${b.nombre}, ${ent} entrega, ${cxpM(monto)}.`);
+  });
+  return n;
+}
+function becAplicarPagos() {
+  let n = 0;
+  const usados = new Set([...BEC.pagos.map(p=>p.gasto), ...CXP.obl.flatMap(o=>(o.abonos||[]).map(a=>a.gasto))].filter(Boolean));
+  const ignorar = new Set(BEC.ignorar||[]);
+  CXP.obl.filter(o=>o.origen==='beca').forEach(o => {
+    const b = BEC.becados.find(x=>x.id===o.becBid); if (!b) return;
+    // a) Abono hecho a mano en Cuentas por pagar → registrarlo como pago de la beca
+    (o.abonos||[]).filter(a=>!a.becPago).forEach(a => {
+      const p = {id:becId('p'), bid:b.id, fecha:a.fecha, entrega:o.becEntrega, monto:a.monto, ref:'', pdf:a.pdf||'', nota:'Desde Cuentas por pagar', gasto:a.gasto||'', cxpAbono:a.id};
+      BEC.pagos.push(p); a.becPago = p.id; n++;
+    });
+    // b) Pago registrado en Becas → abonarlo a la cuenta por pagar
+    becPagosB(b.id, o.becAnio).filter(p=>p.entrega===o.becEntrega && !p.cxpAbono && (p.fecha||'')>=(o.fecha||'')).forEach(p => {
+      if (cxpSaldo(o) <= 0.005) return;
+      const a = {id:cxpId(), fecha:p.fecha, monto:p.monto, pdf:p.pdf||'', nota:'Pago registrado en Becas', gasto:p.gasto||'', becPago:p.id};
+      (o.abonos = o.abonos||[]).push(a); p.cxpAbono = a.id; n++;
+    });
+    // c) Gasto de la transferencia ya registrado → aplicarlo solo
+    if (cxpSaldo(o) <= 0.005) return;
+    const cand = (DATA.gastos||[]).filter(g => becEsGastoBeca(g) && !usados.has(cxpGKey(g)) && !ignorar.has(cxpGKey(g)) &&
+        becGFecha(g).slice(0,7) >= (o.fecha||'').slice(0,7) && r2(g.valor) <= cxpSaldo(o) + 0.005 && becMatchBecado(g)===b)
+      .sort((x,y)=>becGFecha(x).localeCompare(becGFecha(y)));
+    const g = cand[0]; if (!g) return;
+    const key = cxpGKey(g), fecha = becGFecha(g);
+    const a = {id:cxpId(), fecha, monto:r2(g.valor), pdf:g.pdf||'', nota:`Aplicado automáticamente: ${g.desc}`, gasto:key, auto:true};
+    const p = {id:becId('p'), bid:b.id, fecha, entrega:o.becEntrega, monto:r2(g.valor), ref:'', pdf:g.pdf||'', nota:'Aplicado automáticamente desde el gasto registrado', gasto:key, cxpAbono:a.id};
+    a.becPago = p.id; (o.abonos = o.abonos||[]).push(a); BEC.pagos.push(p); usados.add(key); n++;
+    becAvisos.push(`Pago aplicado: ${b.nombre}, ${o.becEntrega} entrega, ${cxpM(g.valor)} (${cxpF(fecha)}).`);
+  });
+  return n;
+}
+function becSincronizar() {
+  if (!BEC || !CXP) return;
+  const n = becCrearCxPDesdeAutorizaciones() + becAplicarPagos();
+  if (n) { becGuardar(); cxpGuardar(); }
+}
+function becQuitarAviso() { becAvisos = []; renderBecas(); }
+
 document.addEventListener('DOMContentLoaded',async ()=>{
   const sheetsOk = await cargarDesdeSheets();
   cargarBandeja(false);
   cargarExtras();
   cxpCargar();
+  becCargar();
+  becSincronizar();
   renderRecurrentes();
   buildMesPills();
   // Iniciar en el mes siguiente al último guardado
