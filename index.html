@@ -3509,7 +3509,7 @@ function becSemilla() {
   const b = (id,nombre,nivel,centro,carrera,banco,cuenta,titular,estado,nota) => ({id,nombre,nivel,centro,carrera,banco,cuenta,titular,estado,nota});
   const becados = [
     b('b01','Ana Graciela Maravilla Vásquez','Universidad','Universidad Pedagógica de El Salvador (UPED)','Lic. en Ciencias de la Educación, esp. Idioma Inglés','Banco de América Central','127477248','Rosa Argelia Vásquez (mamá)','Activa','Becas_26 indicaba cuenta Agrícola 003030429274; en 2026 se paga a BAC.'),
-    b('b02','Daniel Neftalí Ortiz Gámez','Universidad','','','Banco Agrícola','1520070050','Daniel Ortiz','Activa','La 1ª entrega se pagó a la cuenta de Claudia Elizabeth Reyes; la 2ª a cuenta propia.'),
+    b('b02','Daniel Neftalí Ortiz Gámez','Universidad','Universidad de El Salvador (UES)','Lic. en Matemática — carnet PR18071','Banco Agrícola','1520070050','Daniel Ortiz','Activa','La 1ª entrega se pagó a la cuenta de Claudia Elizabeth Reyes; la 2ª a cuenta propia.'),
     b('b06','Manuel Ernesto Luna Hernández','Universidad','','','Banco Agrícola','3300972213','Manuel Ernesto Luna Castaneda','Activa','Becas_26 lo tenía como bachillerato; en 2026 recibe monto universitario.'),
     b('b08','Carlos Fernando Maravilla Vásquez','Bachillerato','Colegio Santa Isabel, Cojutepeque','Bachillerato General, sección B','Banco de América Central','127477248','Rosa Argelia Vásquez (mamá)','Activa',''),
     b('b09','Luis Mario Marroquín Chávez','Bachillerato','Instituto Nacional Técnico Industrial (INTI)','Bachillerato técnico, código ECA1A','Banco Cuscatlán','001401000398772','Aminta Yesenia Chávez Chacón (mamá)','Activa',''),
@@ -3560,6 +3560,10 @@ function becMigrarArchivos() {
   let n = 0;
   (BEC.seg||[]).forEach(x => { if (m[x.archivo]) { x.archivo = m[x.archivo]; n++; } });
   if (typeof CXP !== 'undefined' && CXP) CXP.obl.forEach(o => { Object.keys(m).forEach(k => { if ((o.nota||'').includes(k)) { o.nota = o.nota.replace(k, m[k]); n++; } }); });
+  // Datos académicos recibidos después de la carga inicial (solo se completan si están vacíos)
+  const datos = { b02: {centro:'Universidad de El Salvador (UES)', carrera:'Lic. en Matemática — carnet PR18071'} };
+  Object.keys(datos).forEach(id => { const b = (BEC.becados||[]).find(x=>x.id===id); if (!b) return;
+    Object.keys(datos[id]).forEach(k => { if (!b[k]) { b[k] = datos[id][k]; n++; } }); });
   if (n) { becGuardar(); try { cxpGuardar(); } catch(e) {} }
 }
 function becGuardar() { try { localStorage.setItem(BEC_KEY, JSON.stringify(BEC)); } catch(e) {} }
