@@ -1208,6 +1208,7 @@ function construirHojaMes(wb, idx){
   ws.getCell(`B${row}`).font = {name:'Arial', size:10, bold:true};
   row++;
   const inicioIng = row;
+  let sumIng = 0, sumGas = 0;
   ER.ingresos.forEach((item) => {
     const v = Math.round((item.valores[idx]||0)*100)/100;
     if (v===0) return;
@@ -1218,12 +1219,13 @@ function construirHojaMes(wb, idx){
     ws.getCell(`B${row}`).value = item.nombre;
     ws.getCell(`B${row}`).font = {name:'Arial', size:10};
     ws.getCell(`C${row}`).value = v;
+    sumIng += v;
     ws.getCell(`C${row}`).font = {name:'Arial', size:10};
     ws.getCell(`C${row}`).numFmt = FMT_MONEY;
     row++;
   });
   const finIng = row - 1;
-  ws.getCell(`E${filaIngIni}`).value = { formula: `SUM(C${inicioIng}:C${finIng})` };
+  ws.getCell(`E${filaIngIni}`).value = { formula: `SUM(C${inicioIng}:C${finIng})`, result: Math.round(sumIng*100)/100 };
   ws.getCell(`E${filaIngIni}`).font = {name:'Aptos Narrow', size:11, bold:true};
   ws.getCell(`E${filaIngIni}`).numFmt = FMT_TOTAL;
 
@@ -1243,6 +1245,7 @@ function construirHojaMes(wb, idx){
     ws.getCell(`B${row}`).font = {name:'Arial', size:10, bold:true};
     row++;
     const inicioArea = row;
+    let sumArea = 0;
     info.ministerios.forEach(m => {
       const v = Math.round((m.valores[idx]||0)*100)/100;
       if (v===0) return;
@@ -1252,12 +1255,14 @@ function construirHojaMes(wb, idx){
       ws.getCell(`B${row}`).value = tituloCase(m.nombre);
       ws.getCell(`B${row}`).font = {name:'Arial', size:10};
       ws.getCell(`C${row}`).value = v;
+      sumArea += v;
       ws.getCell(`C${row}`).font = {name:'Arial', size:10};
       ws.getCell(`C${row}`).numFmt = FMT_MONEY;
       row++;
     });
+    sumGas += sumArea;
     const finArea = row - 1;
-    if (finArea >= inicioArea) ws.getCell(`D${filaArea}`).value = { formula: `SUM(C${inicioArea}:C${finArea})` };
+    if (finArea >= inicioArea) ws.getCell(`D${filaArea}`).value = { formula: `SUM(C${inicioArea}:C${finArea})`, result: Math.round(sumArea*100)/100 };
     else ws.getCell(`D${filaArea}`).value = 0;
     ws.getCell(`D${filaArea}`).font = {name:'Arial', size:10, bold:true};
     ws.getCell(`D${filaArea}`).numFmt = FMT_MONEY;
@@ -1266,14 +1271,14 @@ function construirHojaMes(wb, idx){
   });
 
   const refsGastos = filasSubtotal.map(r => `D${r}`).join('+');
-  ws.getCell(`E${filaGasIni}`).value = { formula: refsGastos };
+  ws.getCell(`E${filaGasIni}`).value = { formula: refsGastos, result: Math.round(sumGas*100)/100 };
   ws.getCell(`E${filaGasIni}`).font = {name:'Aptos Narrow', size:11, bold:true};
   ws.getCell(`E${filaGasIni}`).numFmt = FMT_TOTAL;
 
   const filaRes = row;
   ws.getCell(`B${filaRes}`).value = 'UTILIDAD (-PERDIDA) DE OPERACION';
   ws.getCell(`B${filaRes}`).font = {name:'Arial', size:10, bold:true};
-  ws.getCell(`E${filaRes}`).value = { formula: `E${filaIngIni}-E${filaGasIni}` };
+  ws.getCell(`E${filaRes}`).value = { formula: `E${filaIngIni}-E${filaGasIni}`, result: Math.round((sumIng-sumGas)*100)/100 };
   ws.getCell(`E${filaRes}`).font = {name:'Aptos Narrow', size:11, bold:true};
   ws.getCell(`E${filaRes}`).numFmt = FMT_TOTAL_NEG;
 }
