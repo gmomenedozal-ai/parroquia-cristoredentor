@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de Resultados 2026 · Parroquia Cristo Redentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+:root{
+  --ink:#f7f8fa; --panel:#ffffff; --panel2:#f1f3f6;
+  --line: rgba(15,23,42,.08); --line2: rgba(15,23,42,.14);
+  --parchment:#14171c; --parchment-dim: rgba(20,23,28,.62); --parchment-faint: rgba(20,23,28,.40);
+  --gold:#3b5fe0; --gold-soft:#5b7cf0;
+  --green:#0f9d58; --green-dim: rgba(15,157,88,.10);
+  --rust:#d93a2b; --rust-dim: rgba(217,58,43,.09);
+  --amber:#c47a11; --amber-dim: rgba(196,122,17,.11);
+  --r-lg: 16px; --r-md: 11px; --r-sm: 7px;
+  --shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 20px -6px rgba(15,23,42,.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(ellipse 1100px 600px at 15% -10%, rgba(59,95,224,.05), transparent 55%),
+    radial-gradient(ellipse 800px 500px at 100% 5%, rgba(15,157,88,.04), transparent 55%),
+    var(--ink);
+  color:var(--parchment); font-family:'Inter',sans-serif; min-height:100vh; line-height:1.5;
+}
+.num{font-family:'IBM Plex Mono',monospace; font-variant-numeric: tabular-nums;}
+::selection{background:var(--gold); color:#fff}
+
+.topbar{position:sticky; top:0; z-index:100; background:rgba(247,248,250,.82); backdrop-filter: blur(16px) saturate(150%); border-bottom:1px solid var(--line);}
+.topbar-in{max-width:1180px; margin:0 auto; padding:.9rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;}
+.brand{display:flex; align-items:center; gap:10px}
+.brand-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--gold),#8a6323);display:flex;align-items:center;justify-content:center;font-size:14px; color:var(--ink); font-weight:700; flex-shrink:0;}
+.brand-t{font-family:'Inter',sans-serif; font-size:14.5px; font-weight:700; letter-spacing:-.01em}
+.brand-s{font-size:10.5px; color:var(--parchment-dim); margin-top:1px; text-transform:uppercase; letter-spacing:.07em}
+.ctrl-cluster{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.seg{display:flex; background:var(--panel); border:1px solid var(--line2); border-radius:999px; padding:3px; gap:2px}
+.seg button{border:none; background:none; color:var(--parchment-dim); font-family:'Inter',sans-serif; font-size:12px; font-weight:600; padding:6px 13px; border-radius:999px; cursor:pointer; transition:all .18s;}
+.seg button.act{background:var(--gold); color:#fff}
+.vista{display:none} .vista.act{display:block}
+.mes-row{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.mes-p{padding:6px 14px; border-radius:20px; border:1px solid var(--line2); background:var(--panel); color:var(--parchment-dim); font-size:12.5px; font-family:'Inter',sans-serif; cursor:pointer; transition:all .15s}
+.mes-p:hover{border-color:var(--gold); color:var(--parchment)}
+.mes-p.act{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600}
+.var-tbl{width:100%; border-collapse:collapse; font-size:12px}
+.var-tbl th{font-size:9.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--parchment-faint); text-align:left; padding:6px 10px; border-bottom:1px solid var(--line2)}
+.var-tbl th.r{text-align:right}
+.var-tbl td{padding:6px 10px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace}
+.var-tbl td.r{text-align:right}
+.var-tbl td:first-child{font-family:'Inter',sans-serif}
+.var-tbl tr.var-tot td{font-weight:600; background:rgba(59,95,224,.07); border-top:1px solid var(--line2)}
+.sub-block{margin-top:1.4rem; border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden}
+.sub-head{padding:.6rem 1rem; background:var(--panel2); display:grid; grid-template-columns:1fr 90px 90px; gap:8px; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--parchment-faint)}
+.sub-head span:not(:first-child){text-align:right}
+.sub-row{display:grid; grid-template-columns:1fr 90px 90px; gap:8px; padding:.55rem 1rem; border-top:1px solid var(--line); cursor:pointer; align-items:center; transition:background .12s}
+.sub-row:hover{background:var(--panel2)}
+.sub-row-nombre{font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px}
+.sub-toggle{font-size:9px; color:var(--gold); transition:transform .15s; display:inline-block; width:9px}
+.sub-toggle.open{transform:rotate(90deg)}
+.sub-row-val{font-family:'IBM Plex Mono',monospace; font-size:12px; text-align:right}
+.sub-row-val.acum{font-weight:700; color:var(--parchment)}
+.sub-hijos{display:none; background:var(--ink)}
+.sub-hijos.open{display:block}
+.sub-hijo{display:grid; grid-template-columns:1fr 90px 90px; gap:8px; padding:.45rem 1rem .45rem 2rem; border-top:1px solid var(--line); font-size:11.5px; color:var(--parchment-dim)}
+.sub-hijo-val{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--parchment-dim)}
+.seg button:not(.act):hover{color:var(--parchment)}
+
+.wrap{max-width:1180px; margin:0 auto; padding:0 1.5rem}
+section{padding:3.2rem 0}
+.eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); font-weight:700; margin-bottom:.6rem; display:flex; align-items:center; gap:8px;}
+.eyebrow::before{content:'';width:22px;height:1px;background:var(--gold)}
+h2.title{font-family:'Inter',sans-serif; font-weight:800; font-size:clamp(22px,3vw,30px); letter-spacing:-.025em}
+.sub{color:var(--parchment-dim); font-size:14px; margin-top:.4rem; max-width:680px}
+
+.hero{padding-top:3.5rem; padding-bottom:2rem}
+.hero-eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--gold-soft); font-weight:600; margin-bottom:1rem}
+.hero h1{font-family:'Inter',sans-serif; font-weight:800; font-size:clamp(30px,4.4vw,46px); line-height:1.08; letter-spacing:-.03em;}
+.hero h1 em{font-style:normal; color:var(--gold-soft); font-weight:800}
+.hero-sub{color:var(--parchment-dim); font-size:15px; margin-top:1rem; max-width:620px; line-height:1.65}
+
+.kpi-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; margin-top:2rem; box-shadow:var(--shadow)}
+.kpi-cell{background:var(--panel); padding:1.4rem 1.5rem; transition:background .15s} .kpi-cell:hover{background:var(--panel2)}
+.kpi-l{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--parchment-faint)}
+.kpi-v{font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; margin-top:.5rem; letter-spacing:-.01em}
+.kpi-v.gold{color:var(--gold-soft)} .kpi-v.green{color:var(--green)} .kpi-v.rust{color:var(--rust)}
+.kpi-note{font-size:11.5px; color:var(--parchment-dim); margin-top:.3rem}
+
+.trend-card{margin-top:1.6rem; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--panel); padding:1.8rem 2rem; box-shadow:var(--shadow)}
+.trend-canvas-wrap{position:relative; height:300px; margin-top:1rem}
+.legend-row{display:flex; gap:1.6rem; flex-wrap:wrap; margin-top:1rem}
+.legend-item{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--parchment-dim)}
+.legend-dot{width:9px;height:9px;border-radius:2px}
+.legend-dot.line{width:14px;height:2px;border-radius:1px}
+
+.g2{display:grid; grid-template-columns:1fr 1fr; gap:1.4rem}
+.chart-box{background:var(--panel); border:1px solid var(--line); border-radius:var(--r-lg); padding:1.5rem 1.6rem; margin-top:1.6rem; box-shadow:var(--shadow)}
+.chart-box-t{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--parchment-dim); margin-bottom:.9rem}
+.chart-canvas-wrap-sm{position:relative; height:230px}
+
+.ing-list{display:flex; flex-direction:column; gap:10px; margin-top:.4rem}
+.ing-row{display:grid; grid-template-columns:1fr 80px; gap:10px; align-items:center; font-size:12.5px}
+.ing-track{height:6px; background:rgba(15,23,42,.08); border-radius:3px; overflow:hidden; margin-top:5px}
+.ing-fill{height:100%; border-radius:3px}
+.ing-amt{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--parchment-dim); font-size:12px}
+
+.area-block{margin-top:1.6rem; border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow)}
+.area-head{display:flex; align-items:center; justify-content:space-between; padding:.9rem 1.4rem; background:var(--panel2); cursor:pointer; user-select:none;}
+.area-head-l{display:flex; align-items:center; gap:10px}
+.area-name{font-family:'Inter',sans-serif; font-size:15px; font-weight:700}
+.area-toggle{font-size:11px; color:var(--parchment-faint); transition:transform .18s}
+.area-toggle.open{transform:rotate(90deg)}
+.area-total{font-family:'IBM Plex Mono',monospace; font-size:13.5px; color:var(--gold-soft)}
+.area-rows{display:none; background:var(--panel)}
+.area-rows.open{display:block}
+.min-row{display:grid; grid-template-columns:28px 1fr 120px 60px; gap:12px; align-items:center; padding:.7rem 1.4rem; border-top:1px solid var(--line); cursor:pointer; transition:background .15s}
+.min-row:hover{background:var(--panel2)}
+.min-row.sel{background:var(--panel2); box-shadow:inset 3px 0 0 var(--gold)}
+.min-idx{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--parchment-faint)}
+.min-name{font-size:12.5px; font-weight:600}
+.min-track{height:5px; background:rgba(15,23,42,.07); border-radius:3px; overflow:hidden; margin-top:5px}
+.min-fill{height:100%; border-radius:3px; background:var(--gold)}
+.min-name .sm{display:block;font-size:10px;color:var(--parchment-faint);font-weight:400;margin-top:1px}
+.min-amt{font-family:'IBM Plex Mono',monospace; font-size:12px; text-align:right; color:var(--parchment)}
+.min-amt .lbl{display:block;font-size:9.5px;color:var(--parchment-faint);text-transform:uppercase;letter-spacing:.05em}
+.min-pct{font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-align:right; font-weight:600}
+.tag{display:inline-flex; align-items:center; gap:5px; font-size:9.5px; font-weight:600; padding:2px 7px; border-radius:999px; text-transform:uppercase; letter-spacing:.03em}
+.tag-green{background:var(--green-dim); color:var(--green)}
+.tag-amber{background:var(--amber-dim); color:var(--amber)}
+.tag-rust{background:var(--rust-dim); color:var(--rust)}
+.tag-gray{background:rgba(15,23,42,.06); color:var(--parchment-faint)}
+.pp-select{background:var(--panel); border:1px solid var(--line2); color:var(--parchment); font-family:'Inter',sans-serif; font-size:13px; font-weight:500; padding:8px 14px; border-radius:var(--r-sm); cursor:pointer; min-width:260px}
+.pp-select:hover{border-color:var(--gold)}
+.pp-select:focus{outline:2px solid var(--gold); outline-offset:1px}
+
+.detail-card{margin-top:1.6rem; border:1px solid var(--line2); border-radius:var(--r-lg); background:var(--panel); padding:1.8rem 2rem; box-shadow:var(--shadow)}
+.detail-head{display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:1.4rem}
+.detail-name{font-family:'Inter',sans-serif; font-size:20px; font-weight:800; letter-spacing:-.02em}
+.detail-area{font-size:12px; color:var(--parchment-dim); margin-top:2px}
+.detail-metrics{display:flex; gap:1.8rem; flex-wrap:wrap}
+.dm-v{font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:600}
+.dm-l{font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--parchment-faint); margin-top:2px}
+.detail-note{font-size:12px; color:var(--parchment-dim); background:rgba(217,164,65,.10); border:1px solid var(--amber-dim); border-radius:var(--r-sm); padding:.7rem 1rem; margin-bottom:1.2rem; line-height:1.6}
+
+footer{border-top:1px solid var(--line); padding:2.2rem 0 3rem; margin-top:1rem}
+.foot-grid{display:flex; justify-content:space-between; gap:2rem; flex-wrap:wrap}
+.foot-note{font-size:11.5px; color:var(--parchment-faint); max-width:560px; line-height:1.6}
+.foot-meta{font-size:11px; color:var(--parchment-faint); font-family:'IBM Plex Mono',monospace}
+
+@media(max-width:860px){
+  .g2{grid-template-columns:1fr}
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .min-row{grid-template-columns:20px 1fr 70px; grid-template-areas:"idx name pct" "idx amt amt"; row-gap:5px}
+  .min-idx{grid-area:idx} .min-name{grid-area:name} .min-pct{grid-area:pct} .min-amt{grid-area:amt; text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <img src="data:image/png;base64,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" alt="Parroquia Cristo Redentor" style="height:38px;width:auto;object-fit:contain">
+      <div>
+        <div class="brand-t">Parroquia Cristo Redentor</div>
+        <div class="brand-s">Estado de Resultados 2026 · Consejo Económico</div>
+      </div>
+    </div>
+    <div class="ctrl-cluster">
+      <div class="seg" id="seg-tab">
+        <button class="act" onclick="setTab('resultado')">Resultado del Año</button>
+        <!-- Pestaña "Presupuesto" oculta temporalmente: el presupuesto actual está armado
+             en base de flujo de caja, no en base contable (devengado), por lo que no es
+             comparable de forma directa contra este Estado de Resultados. Se retoma cuando
+             el presupuesto 2027 se arme sobre base contable. El código y los datos siguen
+             intactos en vista-presupuesto, solo no se muestra. -->
+        <button onclick="setTab('pormes')">Detalle mensual</button>
+      </div>
+      <button class="mes-p" onclick="descargarExcel()" style="border-radius:8px;font-weight:600;color:var(--gold);border-color:var(--gold)">⬇ Descargar Excel para publicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="vista act" id="vista-resultado">
+
+  <section class="hero">
+    <div class="hero-eyebrow">Contabilidad oficial · Enero a Septiembre 2026</div>
+    <h1>Estado de Resultados <em>2026</em></h1>
+    <p class="hero-sub">Estado de Resultados según el catálogo de cuentas oficial de la parroquia — ingresos por fuente, gastos por área pastoral y ministerio, y el resultado del período.</p>
+
+    <div class="mes-row" id="mes-pills-resultado" style="margin-top:1.4rem"></div>
+
+    <div class="kpi-strip">
+      <div class="kpi-cell">
+        <div class="kpi-l">Ingresos</div>
+        <div class="kpi-v gold num" id="kpi-ing">—</div>
+        <div class="kpi-note" id="kpi-ing-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Gastos de operación</div>
+        <div class="kpi-v num" id="kpi-gas">—</div>
+        <div class="kpi-note" id="kpi-gas-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Resultado del período</div>
+        <div class="kpi-v num" id="kpi-res">—</div>
+        <div class="kpi-note" id="kpi-res-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Cobertura de gasto</div>
+        <div class="kpi-v num" id="kpi-cob">—</div>
+        <div class="kpi-note">ingresos ÷ gastos del período</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="eyebrow" style="color:var(--rust)">Liquidez y sostenibilidad</div>
+    <h2 class="title">¿Con qué se sostiene el déficit?</h2>
+    <p class="sub">El patrimonio contable ($395,499) parece un colchón grande, pero la mayoría no es efectivo disponible — es el edificio de la parroquia y un fondo de reserva. Lo que de verdad importa es el capital de trabajo: lo líquido contra lo que se debe a corto plazo.</p>
+
+    <div class="kpi-strip" style="margin-top:1.6rem">
+      <div class="kpi-cell">
+        <div class="kpi-l">Activo corriente (líquido)</div>
+        <div class="kpi-v num" id="liq-activo">—</div>
+        <div class="kpi-note">Efectivo + cuentas por cobrar</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Pasivo corriente (se debe ya)</div>
+        <div class="kpi-v rust num" id="liq-pasivo">—</div>
+        <div class="kpi-note">Incluye beneficios a empleados por pagar</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Brecha de capital de trabajo</div>
+        <div class="kpi-v rust num" id="liq-brecha">—</div>
+        <div class="kpi-note">Activo corriente − Pasivo corriente</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Beneficios a empleados por pagar</div>
+        <div class="kpi-v num" id="liq-beneficios">—</div>
+        <div class="kpi-note">El pasivo más grande, con mucho</div>
+      </div>
+    </div>
+
+    <div class="chart-box" style="margin-top:1.6rem">
+      <div class="chart-box-t">Saldo mensual — las 2 cuentas activas (Ene-Sep)</div>
+      <div class="chart-canvas-wrap-sm" style="height:260px"><canvas id="chart-liquidez"></canvas></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Promerica *4000707</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--rust)"></span>Banco Agrícola *5036258465</div>
+      </div>
+    </div>
+
+    <div class="detail-note" style="margin-top:1.4rem; border-color:var(--rust-dim); background:rgba(217,58,43,.06)">
+      <strong style="color:var(--parchment)">Cómo leer esto:</strong> la parroquia sigue operando porque funciona "al día" — la colecta de cada semana cubre los gastos de esa semana, sin acumular una reserva de efectivo real. El déficit contable se absorbe en papel contra el patrimonio, pero eso no es lo mismo que tener el dinero disponible. La señal de alerta real es que el activo corriente ($16,408) no alcanza para cubrir el pasivo corriente ($48,071) — faltan <strong style="color:var(--rust)">$31,663</strong>, y de ese pasivo, $34,644 son beneficios a empleados por pagar (indemnizaciones/prestaciones acumuladas): no urgen hoy, pero es un compromiso real que sigue creciendo mientras no se aparte efectivo para respaldarlo.
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="eyebrow">Tendencia</div>
+    <h2 class="title">¿Vamos hacia el equilibrio?</h2>
+    <p class="sub">Ingresos y gastos mensuales, con el resultado del período como línea de referencia.</p>
+    <div class="trend-card">
+      <div class="trend-canvas-wrap"><canvas id="chart-tendencia"></canvas></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Ingresos</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--rust)"></span>Gastos</div>
+        <div class="legend-item"><span class="legend-dot line" style="background:var(--gold-soft)"></span>Resultado del período</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Origen de los ingresos</div>
+    <h2 class="title">¿De dónde viene el sostén?</h2>
+    <div class="g2">
+      <div class="chart-box">
+        <div class="chart-box-t">Distribución acumulada Ene-Sep</div>
+        <div class="chart-canvas-wrap-sm"><canvas id="chart-donut-ing"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-t">Por fuente</div>
+        <div class="ing-list" id="ing-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Por área pastoral y ministerio</div>
+    <h2 class="title">¿En qué se está invirtiendo?</h2>
+    <p class="sub">Gastos reales según la contabilidad oficial, agrupados por las 4 áreas pastorales y ordenados de mayor a menor dentro de cada una. Toque un ministerio para ver su detalle mensual y, si aplica, el desglose por sub-cuenta.</p>
+    <div id="areas-container"></div>
+  </section>
+
+  <section id="sec-detalle" style="display:none; padding-top:0">
+    <div class="eyebrow">Detalle seleccionado</div>
+    <h2 class="title" id="detalle-title-top">Ministerio</h2>
+    <div class="detail-card">
+      <div class="detail-head">
+        <div>
+          <div class="detail-name" id="det-nombre">—</div>
+          <div class="detail-area" id="det-area"></div>
+        </div>
+        <div class="detail-metrics">
+          <div><div class="dm-v num" id="det-real">—</div><div class="dm-l">Gasto real (acumulado del período)</div></div>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap-sm" style="height:200px"><canvas id="chart-detalle-mensual"></canvas></div>
+      <div id="det-subcuentas"></div>
+    </div>
+  </section>
+
+  <section id="sec-diezmos">
+    <div class="eyebrow" style="color:var(--rust)">⚠ Hallazgo pendiente de conciliar</div>
+    <h2 class="title">Diezmos de comunidades — informe propio vs. libros oficiales</h2>
+    <p class="sub">Las comunidades presentaron un informe propio a junio 2026 reportando un crecimiento del 17.63% frente a 2025. Esa cuenta es matemáticamente correcta <em style="color:var(--parchment)">dentro de su propio informe</em> — pero al cruzarla contra la cuenta contable oficial "Aporte comunidades - diezmo" del Estado de Resultados, los totales no coinciden.</p>
+
+    <div class="kpi-strip" style="margin-top:1.6rem">
+      <div class="kpi-cell">
+        <div class="kpi-l">Comunidades reportan (Ene-Jun)</div>
+        <div class="kpi-v gold num" id="dz-comunidad">—</div>
+        <div class="kpi-note">Informe propio de las comunidades</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Libros oficiales (Ene-Jun)</div>
+        <div class="kpi-v num" id="dz-oficial">—</div>
+        <div class="kpi-note">Cuenta "Aporte comunidades - diezmo"</div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Diferencia sin conciliar</div>
+        <div class="kpi-v rust num" id="dz-diff">—</div>
+        <div class="kpi-note" id="dz-diff-pct"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Meses con diferencia</div>
+        <div class="kpi-v" id="dz-meses">—</div>
+        <div class="kpi-note">de 6 meses revisados</div>
+      </div>
+    </div>
+
+    <div class="trend-card">
+      <div class="chart-box-t" style="margin-bottom:0">Comparación mensual — lo que reportan vs. lo que quedó contabilizado</div>
+      <div class="trend-canvas-wrap" style="height:260px"><canvas id="chart-diezmos"></canvas></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--gold-soft)"></span>Informe de las comunidades</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--parchment-faint)"></span>Libros oficiales</div>
+      </div>
+    </div>
+
+    <div class="detail-note" style="margin-top:1.4rem">
+      <strong style="color:var(--parchment)">Nota para el Consejo:</strong> el 17.63% de crecimiento que reportan las comunidades es un cálculo correcto sobre su propio historial (2026 vs. 2025), pero no está verificado contra la contabilidad de la parroquia. La diferencia acumulada de <strong>$5,339.62</strong> (19.2% sobre lo contabilizado) no implica necesariamente un faltante — puede deberse a desfases en el registro, a que parte de lo entregado se clasificó bajo otra cuenta contable, o a diferencias reales entre lo recaudado y lo depositado. Pendiente: solicitar a la Comisión/Ministerio de Comunidades el detalle mes a mes de las entregas físicas, con fecha, para cruzarlo contra los depósitos bancarios registrados.
+    </div>
+  </section>
+
+</div>
+
+<div class="vista" id="vista-presupuesto">
+  <section class="hero" style="padding-top:3rem; padding-bottom:1.5rem">
+    <div class="hero-eyebrow">Presupuesto 2026 vs. ejecutado real</div>
+    <h1 style="font-size:clamp(28px,4vw,42px)">Presupuesto <em>vs. Ejecutado</em></h1>
+    <p class="hero-sub">Comparativo entre el presupuesto anual aprobado por el Consejo y lo efectivamente ejecutado según la contabilidad oficial, por ministerio y comisión.</p>
+
+    <div class="mes-row" id="mes-pills-presupuesto" style="margin-top:1.4rem"></div>
+
+    <div class="kpi-strip">
+      <div class="kpi-cell">
+        <div class="kpi-l">Presupuestado</div>
+        <div class="kpi-v gold num" id="pp-kpi-pres">—</div>
+        <div class="kpi-note" id="pp-kpi-pres-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Ejecutado</div>
+        <div class="kpi-v num" id="pp-kpi-real">—</div>
+        <div class="kpi-note" id="pp-kpi-real-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Disponible</div>
+        <div class="kpi-v num" id="pp-kpi-disp">—</div>
+        <div class="kpi-note" id="pp-kpi-disp-note"></div>
+      </div>
+      <div class="kpi-cell">
+        <div class="kpi-l">Sobre-ejecutados</div>
+        <div class="kpi-v rust num" id="pp-kpi-sobre">—</div>
+        <div class="kpi-note" id="pp-kpi-sobre-note">de los ministerios con presupuesto</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Por ministerio y comisión</div>
+    <h2 class="title">Ranking de ejecución presupuestaria</h2>
+    <p class="sub">Ordenado de mayor a menor porcentaje ejecutado. Toque cualquiera, o selecciónelo directo abajo, para ver su detalle completo del año.</p>
+
+    <div style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; flex-wrap:wrap">
+      <label for="pp-select-min" style="font-size:12px; color:var(--parchment-dim)">Ver un ministerio o comisión directo:</label>
+      <select id="pp-select-min" class="pp-select" onchange="if(this.value) ppSeleccionar(this.value)">
+        <option value="">— Seleccionar —</option>
+      </select>
+    </div>
+
+    <div class="rank-list" id="pp-rank-list" style="margin-top:1.2rem; border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow)"></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="eyebrow">Tendencia acumulada</div>
+    <h2 class="title">¿Cómo va el año contra lo planificado?</h2>
+    <p class="sub">Presupuesto y ejecución acumulados mes a mes, sumando todos los ministerios con presupuesto asignado.</p>
+    <div class="trend-card">
+      <div class="trend-canvas-wrap" style="height:280px"><canvas id="pp-chart-tendencia"></canvas></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--gold-soft)"></span>Presupuesto acumulado</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Ejecutado acumulado</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pp-sec-detalle" style="display:none; padding-top:0">
+    <div class="eyebrow">Detalle seleccionado</div>
+    <h2 class="title" id="pp-detalle-title-top">Ministerio</h2>
+    <div class="detail-card">
+      <div class="detail-head">
+        <div>
+          <div class="detail-name" id="pp-det-nombre">—</div>
+          <div class="detail-area" id="pp-det-area"></div>
+        </div>
+        <div class="detail-metrics">
+          <div><div class="dm-v num" id="pp-det-real">—</div><div class="dm-l">Ejecutado (año completo)</div></div>
+          <div><div class="dm-v num" id="pp-det-pres">—</div><div class="dm-l">Presupuesto anual 2026</div></div>
+          <div><div class="dm-v num" id="pp-det-pct">—</div><div class="dm-l">% ejecutado</div></div>
+        </div>
+      </div>
+      <div id="pp-det-nota" style="display:none" class="detail-note"></div>
+      <div class="chart-canvas-wrap-sm" style="height:200px"><canvas id="pp-chart-detalle-mensual"></canvas></div>
+      <div id="pp-det-variacion"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Para el Consejo</div>
+    <h2 class="title">Puntos de atención</h2>
+    <div class="g2" id="pp-alertas"></div>
+  </section>
+</div>
+
+<div class="vista" id="vista-pormes">
+  <section style="padding-top:3rem">
+    <div class="eyebrow">Detalle mensual</div>
+    <h2 class="title">Estado de Resultados, cuenta por cuenta</h2>
+    <p class="sub">Haga clic en <strong style="color:var(--parchment)">INGRESOS</strong> o <strong style="color:var(--parchment)">GASTOS</strong> para desplegar sus cuentas. Dentro de Gastos, cada área pastoral también se despliega para ver sus ministerios y comisiones.</p>
+
+    <div class="madre-table" id="madre-table" style="margin-top:1.6rem"></div>
+  </section>
+</div>
+
+<style>
+.madre-table{border:1px solid var(--line2); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow)}
+.mt-head{display:grid; grid-template-columns:2.2fr repeat(8,1fr) 1fr; gap:0; padding:.6rem 1.3rem; background:var(--panel2); border-bottom:1px solid var(--line)}
+.mt-head span{font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--parchment-faint); text-align:right}
+.mt-head span:first-child{text-align:left}
+.mt-madre{display:grid; grid-template-columns:2.2fr repeat(8,1fr) 1fr; gap:0; padding:.85rem 1.3rem; background:var(--panel); cursor:pointer; user-select:none; border-top:1px solid var(--line); align-items:center; transition:background .15s}
+.mt-madre:hover{background:var(--panel2)}
+.mt-madre.open{background:var(--panel2)}
+.mt-madre-nombre{font-family:'Inter',sans-serif; font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:8px}
+.mt-toggle{font-size:11px; color:var(--gold-soft); transition:transform .18s; display:inline-block}
+.mt-toggle.open{transform:rotate(90deg)}
+.mt-val{font-family:'IBM Plex Mono',monospace; font-size:12px; text-align:right; color:var(--parchment)}
+.mt-val.tot{font-weight:600; color:var(--gold-soft)}
+.mt-rows{display:none; background:var(--ink)}
+.mt-rows.open{display:block}
+.mt-hijo{display:grid; grid-template-columns:2.2fr repeat(8,1fr) 1fr; gap:0; padding:.6rem 1.3rem 0.6rem 2.2rem; border-top:1px solid var(--line); font-size:12px; align-items:center}
+.mt-hijo-nombre{color:var(--parchment-dim)}
+.mt-hijo-val{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--parchment-dim); font-size:11.5px}
+.mt-hijo-val.tot{color:var(--parchment); font-weight:500}
+.mt-area{display:grid; grid-template-columns:2.2fr repeat(8,1fr) 1fr; gap:0; padding:.65rem 1.3rem .65rem 2.2rem; border-top:1px solid var(--line); cursor:pointer; background:rgba(59,95,224,.04); align-items:center; transition:background .15s}
+.mt-area:hover{background:rgba(59,95,224,.08)}
+.mt-area-nombre{font-size:12.5px; font-weight:600; color:var(--gold-soft); display:flex; align-items:center; gap:7px}
+.mt-area-val{font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-align:right; color:var(--gold-soft)}
+.mt-area-val.tot{font-weight:600}
+.mt-nieto-rows{display:none}
+.mt-nieto-rows.open{display:block}
+.mt-nieto{display:grid; grid-template-columns:2.2fr repeat(8,1fr) 1fr; gap:0; padding:.5rem 1.3rem .5rem 3.4rem; border-top:1px solid var(--line); font-size:11.5px}
+.mt-nieto-nombre{color:var(--parchment-faint)}
+.mt-nieto-val{font-family:'IBM Plex Mono',monospace; text-align:right; color:var(--parchment-faint)}
+.mt-nieto-val.tot{color:var(--parchment-dim)}
+@media(max-width:860px){
+  .mt-head, .mt-madre, .mt-hijo, .mt-area, .mt-nieto{grid-template-columns:1.6fr repeat(3,1fr)}
+}
+</style>
+
+  <footer>
+    <div class="foot-grid">
+      <p class="foot-note">Cifras del Estado de Resultados oficial según la contabilidad de la parroquia (enero-septiembre 2026), con el desglose de "Gestión Litúrgica" y "Administración y Mantenimiento" tomado del Balance de Comprobación.</p>
+      <div class="foot-meta" id="foot-fecha"></div>
+    </div>
+  </footer>
+
+</div>
+
+<script id="data-er" type="application/json">{"ingresos": [{"nombre": "Colecta de Misas", "valores": [5482.19, 4542.06, 7231.18, 10895.84, 7774.4, 8472.67, 6405.56, 6093.42, 5510.57]}, {"nombre": "Aporte Obras Parroquiales", "valores": [0, 0, 0, 0, 0, 0, 0, 500, 0]}, {"nombre": "Colecta - Otros", "valores": [25, 66.4, 0.0, 0.0, 0.0, 15.0, 40.0, 215.0, 0]}, {"nombre": "Intenciones y Ofrendas", "valores": [654.75, 324.75, 1466.82, 562.0, 880.5, 442.0, 646.5, 595.0, 88]}, {"nombre": "Otros Ingresos", "valores": [142.5, 852.5, 827.5, 725.0, 2175.0, 685.0, 830.0, 525.0, 0]}, {"nombre": "Diezmo de Comunidades", "valores": [7589.89, 4480.87, 5792.2, 3443.07, 3056.35, 3491.8, 3798.0, 5239.0, 5259]}, {"nombre": "Donación con Recibo", "valores": [360, 485, 710, 285, 250, 285, 100, 285, 1250]}, {"nombre": "Donaciones Voluntarias", "valores": [2549.58, 1120.0, 3612.1, 742.48, 1325.0, 4990.0, 1655.0, 655.0, 700]}, {"nombre": "Cuotas de Retiros", "valores": [0, 1975, 0, 0, 0, 0, 0, 0, 0]}, {"nombre": "Alcancías", "valores": [246.87, 232.07, 221.0, 194.52, 120.85, 208.98, 338.4, 204.3, 296.18]}, {"nombre": "Aporte MEC", "valores": [0, 300, 0, 1300, 1400, 0, 1500, 700, 700]}, {"nombre": "Donativo Juventud CR", "valores": [0, 0, 0, 50, 0, 0, 0, 0, 0]}, {"nombre": "Retiros Cuaresmales", "valores": [0, 130, 0, 0, 0, 0, 0, 0, 0]}, {"nombre": "Ministerio de Acción Social", "valores": [1986.3, 1993.65, 1483.75, 1482.81, 1294.1, 1479.55, 1335.65, 1445.56, 1567.7]}, {"nombre": "Rifas", "valores": [0, 0, 0, 0, 0, 0, 0, 0, 180]}], "areas": {"PASTORAL PROFETICA": {"total": [228, 627.97, 1640.0, 102.75, 786.86, 1160.0, 3276.19, 1298.0, 806.0], "ministerios": [{"codigo": 410101, "nombre": "Comision para la Mision", "valores": [0, 0, 0, 0, 0, 625, 2480, 750, 806]}, {"codigo": 410102, "nombre": "Ministerio Evangelizacion", "valores": [0, 52.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0]}, {"codigo": 410103, "nombre": "Bautismo", "valores": [0, 0, 0, 0, 47.61, 0.0, 394.55, 0.0, 0]}, {"codigo": 410104, "nombre": "Catequesis Niños", "valores": [0, 0, 420, 0, 366.25, 215.0, 341.64, 210.0, 0]}, {"codigo": 410106, "nombre": "Comunicaciones", "valores": [228, 0, 0, 102.75, 18.0, 20.0, 60.0, 0.0, 0]}, {"codigo": 410107, "nombre": "Comision Pastoral Vocacional", "valores": [0, 0, 0, 0, 0, 0, 0, 0, 0.0]}, {"codigo": 410121, "nombre": "Formacion de Fuerzas Vivas y Retiros", "valores": [0, 175, 162.5, 0.0, 355.0, 300.0, 0.0, 0.0, 0]}, {"codigo": 410123, "nombre": "Comunidades", "valores": [0, 400, 1057.5, 0.0, 0.0, 0.0, 0.0, 338.0, 0]}]}, "PASTORAL LITURGICA": {"total": [5864.84, 5862.0, 9850.44, 4944.75, 4449.29, 5132.76, 4785.87, 4306.16, 4021.25], "ministerios": [{"codigo": 410209, "nombre": "Liturgia", "valores": [142.84, 1550.0, 5205.11, 827.75, 264.79, 1156.13, 603.87, 302.8, 90.98]}, {"codigo": 410212, "nombre": "Conversion y Espiritualidad", "valores": [0, 0, 0, 0, 0, 0, 0, 0, 86.6]}, {"codigo": 410213, "nombre": "Religiosidad Popular", "valores": [0, 0, 0, 0, 0, 0, 400, 0, 0]}, {"codigo": 410214, "nombre": "Gestion Liturgica", "valores": [5722, 4312, 4645.33, 4117.0, 4184.5, 3976.63, 3782.0, 4003.36, 3843.67]}]}, "PASTORAL SOCIAL": {"total": [6566.23, 4901.46, 4257.56, 4107.41, 7187.4, 4503.52, 6195.36, 3847.48, 3655.0], "ministerios": [{"codigo": 410314, "nombre": "Ministerio de Accion Social", "valores": [4416.08, 4257.73, 3487.86, 2763.68, 4067.34, 3072.79, 4064.63, 2503.75, 2808.27]}, {"codigo": 410315, "nombre": "Ecologica", "valores": [0, 0, 0, 0, 0, 0, 0, 0, 0.0]}, {"codigo": 410316, "nombre": "Misericordia", "valores": [2150.15, 643.73, 769.7, 1343.73, 3120.06, 1430.73, 2130.73, 1343.73, 846.73]}]}, "APOYO PASTORAL": {"total": [10183.11, 8922.72, 9308.19, 11876.56, 7991.71, 9787.52, 9383.93, 7988.61, 10891.53], "ministerios": [{"codigo": 410419, "nombre": "Consejo Asuntos Economicos", "valores": [0, 0, 14.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0]}, {"codigo": 410420, "nombre": "Secretaria Consejo Pastoral", "valores": [195, 0, 0, 238, 0, 15.15, 0.0, 10.0, 14.15]}, {"codigo": 410421, "nombre": "Administracion y Mantenimiento", "valores": [9032.58, 7566.31, 8872.46, 8172.16, 7570.28, 9347.94, 8962.5, 7557.18, 9121.18]}, {"codigo": 410422, "nombre": "Arquidiocesis", "valores": [955.53, 1356.41, 421.43, 3466.4, 421.43, 424.43, 421.43, 421.43, 1756.2]}]}}, "resultado": [-3805.1, -3811.85, -3711.64, -1350.75, -2139.06, -513.8], "meses": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep"], "presupuesto_mensual": {"01": [0, 0, 400, 0, 595.25, 922.08, 0, 0, 0], "02": [0, 6147, 0, 0, 0, 30, 0, 0, 0], "03": [209, 20, 20, 71, 37, 62, 0, 0, 0], "04": [210, 520, 450, 430, 370, 210, 0, 0, 0], "06": [65, 250, 500, 0, 500, 0, 0, 0, 0], "09": [289, 260, 1454, 2596.5, 117, 921, 0, 0, 0], "10": [58, 450, 0, 270, 450, 58, 0, 0, 0], "12": [0, 435, 120, 0, 435, 435, 0, 0, 0], "13": [0, 0, 0, 0, 0, 0, 0, 0, 0], "15": [0, 0, 0, 0, 0, 0, 0, 0, 0], "16": [100, 100, 100, 100, 100, 100, 0, 0, 0], "20": [20396.26, 19006.26, 24745.11, 19848.14, 20465.64, 21999.64, 0, 0, 0], "21": [0, 3865, 575, 125, 125, 125, 0, 0, 0], "22": [0, 0, 0, 0, 0, 0, 0, 0, 0], "23": [515, 90, 285, 2255, 680, 660, 0, 0, 0]}, "subcuentas_admin": {"410214": {"nombre": "Gestión Litúrgica", "subcuentas": [{"codigo": "41021402", "nombre": "Transporte", "acumulado": 1008, "hijos": [], "ultimo": 112}, {"codigo": "41021409", "nombre": "Compras Varias - VIVERES", "acumulado": 4.5, "hijos": [], "ultimo": 0}, {"codigo": "41021412", "nombre": "Apoyos", "acumulado": 126.8, "hijos": [], "ultimo": 0}, {"codigo": "41021414", "nombre": "Sueldos -  Prestaciones", "acumulado": 37447.19, "hijos": [{"codigo": "4102141401", "nombre": "Sueldos", "acumulado": 37244.69, "ultimo": 3731.67}, {"codigo": "4102141404", "nombre": "Vacaciones", "acumulado": 202.5, "ultimo": 0}], "ultimo": 3731.67}]}, "410421": {"nombre": "Administración y Mantenimiento", "subcuentas": [{"codigo": "41042102", "nombre": "Transporte", "acumulado": 71, "hijos": [], "ultimo": 20}, {"codigo": "41042104", "nombre": "Alimentos y Bebidas", "acumulado": 548.89, "hijos": [{"codigo": "4104210401", "nombre": "Refrigerio  varios invitados P. Jaime", "acumulado": 305.8, "ultimo": 0}, {"codigo": "4104210402", "nombre": "Refrigerios Administracion", "acumulado": 49.59, "ultimo": 0}, {"codigo": "4104210403", "nombre": "Convivios Personal Admon", "acumulado": 125, "ultimo": 0}, {"codigo": "4104210404", "nombre": "Atenciones del  P. Jaime", "acumulado": 68.5, "ultimo": 0}], "ultimo": 0}, {"codigo": "41042107", "nombre": "Papelería", "acumulado": 38.5, "hijos": [{"codigo": "4104210701", "nombre": "Papeleria y Utiles", "acumulado": 38.5, "ultimo": 5}], "ultimo": 5}, {"codigo": "41042109", "nombre": "Compras Varias", "acumulado": 2742.95, "hijos": [{"codigo": "4104210901", "nombre": "Materiales de Limpieza", "acumulado": 2742.95, "ultimo": 138.92}], "ultimo": 138.92}, {"codigo": "41042111", "nombre": "Mantenimiento y Reparaciones", "acumulado": 4672.51, "hijos": [{"codigo": "4104211101", "nombre": "Mantenimiento de Edificio", "acumulado": 3809.56, "ultimo": 556.79}, {"codigo": "4104211102", "nombre": "Mantenimiento Mobiliario y Equipo", "acumulado": 200.28, "ultimo": 0}, {"codigo": "4104211105", "nombre": "Mantenimiento Casa Padre", "acumulado": 574.67, "ultimo": 519.03}], "ultimo": 1163.82}, {"codigo": "41042114", "nombre": "Sueldos - Prestaciones", "acumulado": 51986.7, "hijos": [{"codigo": "4104211401", "nombre": "Sueldos", "acumulado": 40960.18, "ultimo": 4396.67}, {"codigo": "4104211402", "nombre": "ISSS Cuota Patronal", "acumulado": 4790.32, "ultimo": 679.37}, {"codigo": "4104211403", "nombre": "AFP Cuota Patronal", "acumulado": 5786.2, "ultimo": 799.99}, {"codigo": "4104211404", "nombre": "Vacaciones", "acumulado": 450, "ultimo": 0}], "ultimo": 5876.03}, {"codigo": "41042115", "nombre": "Servicios", "acumulado": 15498.62, "hijos": [{"codigo": "4104211501", "nombre": "Telefonia Fija y Celular", "acumulado": 3070.25, "ultimo": 293.14}, {"codigo": "4104211502", "nombre": "Fotocopiadoras", "acumulado": 572.2, "ultimo": 0}, {"codigo": "4104211504", "nombre": "Agua Potable", "acumulado": 2816.11, "ultimo": 0}, {"codigo": "4104211505", "nombre": "Energia Electrica", "acumulado": 7747.94, "ultimo": 881.67}, {"codigo": "4104211508", "nombre": "Purificador de Agua", "acumulado": 512, "ultimo": 0}, {"codigo": "4104211509", "nombre": "Seguro de Vehiculos", "acumulado": 780.12, "ultimo": 173.36}], "ultimo": 1348.17}, {"codigo": "41042116", "nombre": "Varios", "acumulado": 83.49, "hijos": [{"codigo": "4104211602", "nombre": "Comisiones Bancarias", "acumulado": 83.49, "ultimo": 9.31}], "ultimo": 9.31}, {"codigo": "41042110", "nombre": "Imprevistos", "acumulado": 559.93, "ultimo": 559.93, "hijos": []}]}}, "diezmos": {"comunidad": [6414.9, 5602.0, 5930.2, 5371.55, 4912.35, 4962.8], "oficial": [7589.89, 4480.87, 5792.2, 3443.07, 3056.35, 3491.8]}, "liquidez": {"meses": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep"], "cuenta707": [5231.21, 514.73, 4024.91, 1080.59, 2209.74, 4051.2, 2738.6, 2388.85, 1733.42], "agricola": [3054.61, 2724.61, -475.39, -475.39, -4475.39, -7475.39, -13975.39, -14358.22, -14358.22], "balance_actual": {"activo_corriente": 12940.15, "pasivo_corriente": 48425.19, "beneficios_empleados": 34643.88, "cuentas_por_pagar": 11086.27, "retenciones": 1762.9, "provisiones": 932.14, "efectivo": 7078.38, "cuentas_por_cobrar": 5861.77, "patrimonio_neto_cr": 54807.73, "fondo_patrimonial": 363998.72, "perdida_acumulada": -27129.74, "patrimonio_total": 391676.71, "activo_fijo": 438828.17, "activo_total": 451768.32}}}</script>
+
+<script>
+const ER = JSON.parse(document.getElementById('data-er').textContent);
+const MESES = ER.meses;
+const COL_GREEN='#0f9d58', COL_AMBER='#c47a11', COL_RUST='#d93a2b', COL_GOLD='#3b5fe0', COL_GOLDSOFT='#5b7cf0';
+const COLORES_ING = ['#3b5fe0','#0f9d58','#c47a11','#d93a2b','#7c3aed','#0891b2','#db2777','#65a30d'];
+
+let mesSel = null; // null = "Todo 2026" (suma de los meses) | 0-8 = un mes específico
+let ministerioSel = null;
+let ppMinisterioSel = null;
+
+const fmt = v => (v<0?'-':'') + '$' + Math.abs(Math.round(v*100)/100).toLocaleString('es-SV',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmt2 = v => (v<0?'-':'') + '$' + Math.abs(Math.round(v*100)/100).toLocaleString('es-SV',{minimumFractionDigits:2,maximumFractionDigits:2});
+function $(id){ return document.getElementById(id); }
+
+function sumaSerie(valores){
+  if (mesSel === null) return valores.reduce((s,v)=>s+v,0);
+  return valores[mesSel]||0;
+}
+
+function renderMesPills(){
+  const html = `<span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--parchment-faint);margin-right:4px">Mes:</span>
+    <button class="mes-p ${mesSel===null?'act':''}" onclick="setMes(null)">Todo 2026</button>
+    ${MESES.map((m,i)=>`<button class="mes-p ${mesSel===i?'act':''}" onclick="setMes(${i})">${m}</button>`).join('')}`;
+  const a = $('mes-pills-resultado'), b = $('mes-pills-presupuesto');
+  if (a) a.innerHTML = html;
+  if (b) b.innerHTML = html;
+}
+
+function setMes(m){
+  mesSel = m;
+  renderMesPills();
+  renderAll();
+  renderPresupuestoTab();
+}
+
+function setTab(t){
+  document.querySelectorAll('#seg-tab button').forEach((b,i)=>{
+    b.classList.toggle('act', (i===0 && t==='resultado') || (i===1 && t==='pormes'));
+  });
+  $('vista-resultado').classList.toggle('act', t==='resultado');
+  $('vista-presupuesto').classList.toggle('act', t==='presupuesto'); // permanece oculta: t nunca es 'presupuesto' desde la UI
+  $('vista-pormes').classList.toggle('act', t==='pormes');
+  if (t==='pormes') renderPorMes();
+  if (t==='presupuesto') renderPresupuestoTab();
+}
+
+Chart.defaults.font.family = "'Inter',sans-serif";
+Chart.defaults.color = 'rgba(20,23,28,.55)';
+let tendenciaChart=null, donutIngChart=null, detalleChart=null;
+
+function renderAll(){
+  const ingPorMesArr = MESES.map((_,idx)=>ER.ingresos.reduce((s,i)=>s+i.valores[idx],0));
+  const totalIng = sumaSerie(ingPorMesArr);
+  let totalGas = 0;
+  Object.values(ER.areas).forEach(a => totalGas += sumaSerie(a.total));
+  const resultado = totalIng - totalGas;
+  const cobertura = totalGas>0 ? (totalIng/totalGas*100) : 0;
+
+  const periodoTxt = mesSel===null ? ('Ene–'+MESES[MESES.length-1]+' (todo 2026)') : MESES[mesSel];
+  $('kpi-ing').textContent = fmt(totalIng);
+  $('kpi-ing-note').textContent = periodoTxt;
+  $('kpi-gas').textContent = fmt(totalGas);
+  $('kpi-gas-note').textContent = periodoTxt;
+  $('kpi-res').textContent = (resultado>=0?'+':'') + fmt(resultado);
+  $('kpi-res').className = 'kpi-v num ' + (resultado>=0?'green':'rust');
+  $('kpi-res-note').textContent = resultado>=0 ? 'Superávit del período' : 'Déficit del período';
+  $('kpi-cob').textContent = cobertura.toFixed(0)+'%';
+
+  renderTendencia();
+  renderIngresos();
+  renderAreas();
+  renderLiquidez();
+  if (ministerioSel) renderDetalle();
+}
+
+let liquidezChart=null;
+function renderLiquidez(){
+  const liq = ER.liquidez;
+  if (!liq) return;
+  const b = liq.balance_actual;
+  const brecha = b.activo_corriente - b.pasivo_corriente;
+
+  $('liq-activo').textContent = fmt(b.activo_corriente);
+  $('liq-pasivo').textContent = fmt(b.pasivo_corriente);
+  $('liq-brecha').textContent = (brecha>=0?'+':'') + fmt(brecha);
+  $('liq-beneficios').textContent = fmt(b.beneficios_empleados);
+
+  const el = $('chart-liquidez');
+  if (!el) return;
+  if (liquidezChart) liquidezChart.destroy();
+  liquidezChart = new Chart(el.getContext('2d'), {
+    type:'line',
+    data:{
+      labels: liq.meses,
+      datasets:[
+        {label:'Promerica *4000707', data:liq.cuenta707, borderColor:COL_GREEN, backgroundColor:'rgba(15,157,88,.08)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:COL_GREEN, borderWidth:2},
+        {label:'Banco Agrícola', data:liq.agricola, borderColor:COL_RUST, backgroundColor:'rgba(217,58,43,.06)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:COL_RUST, borderWidth:2},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:500}, interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:11}} },
+        y:{ grid:{color:'rgba(15,23,42,.07)'}, ticks:{font:{size:10}, callback:v=>'$'+v.toLocaleString()} }
+      },
+      plugins:{
+        legend:{ position:'top', align:'end', labels:{boxWidth:9, boxHeight:9, font:{size:10.5}, usePointStyle:true, pointStyle:'rect'} },
+        tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt2(ctx.raw)}` } }
+      }
+    }
+  });
+}
+
+function renderTendencia(){
+  const el = $('chart-tendencia'); if(!el) return;
+  const ingPorMes = MESES.map((_,idx)=>ER.ingresos.reduce((s,i)=>s+i.valores[idx],0));
+  const gasPorMes = MESES.map((_,idx)=>Object.values(ER.areas).reduce((s,a)=>s+a.total[idx],0));
+  const resPorMes = MESES.map((_,idx)=>ingPorMes[idx]-gasPorMes[idx]);
+
+  if (tendenciaChart) tendenciaChart.destroy();
+  tendenciaChart = new Chart(el.getContext('2d'), {
+    data:{
+      labels: MESES,
+      datasets:[
+        {type:'bar', label:'Ingresos', data:ingPorMes, backgroundColor:'rgba(15,157,88,.55)', borderRadius:4, barPercentage:.55, order:2},
+        {type:'bar', label:'Gastos', data:gasPorMes, backgroundColor:'rgba(193,81,47,.55)', borderRadius:4, barPercentage:.55, order:2},
+        {type:'line', label:'Resultado', data:resPorMes, borderColor:COL_GOLDSOFT, backgroundColor:'rgba(91,124,240,.10)', borderWidth:2.4, tension:.3, pointRadius:4, pointBackgroundColor:COL_GOLDSOFT, pointBorderColor:'#ffffff', pointBorderWidth:2, fill:false, order:1, yAxisID:'y'},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:500},
+      interaction:{mode:'index', intersect:false},
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:11.5}} },
+        y:{ grid:{color:'rgba(15,23,42,.07)'}, ticks:{font:{size:10.5}, callback:v=>'$'+v.toLocaleString()} }
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt2(ctx.raw)}` } }
+      }
+    }
+  });
+}
+
+function renderIngresos(){
+  const filas = ER.ingresos.map(i => ({nombre:i.nombre, valor: sumaSerie(i.valores)})).filter(f=>f.valor>0).sort((a,b)=>b.valor-a.valor);
+  const total = filas.reduce((s,f)=>s+f.valor,0);
+  const max = Math.max(...filas.map(f=>f.valor),1);
+
+  const elDonut = $('chart-donut-ing');
+  if (donutIngChart) donutIngChart.destroy();
+  if (elDonut && filas.length){
+    donutIngChart = new Chart(elDonut.getContext('2d'), {
+      type:'doughnut',
+      data:{ labels:filas.map(f=>f.nombre), datasets:[{ data:filas.map(f=>f.valor), backgroundColor:filas.map((_,i)=>COLORES_ING[i%COLORES_ING.length]), borderColor:'#ffffff', borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'60%', animation:{duration:400},
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${fmt2(ctx.raw)}` } } } }
+    });
+  }
+
+  $('ing-list').innerHTML = filas.map((f,i)=>{
+    const pct = total>0 ? (f.valor/total*100).toFixed(1) : '0.0';
+    const c = COLORES_ING[i%COLORES_ING.length];
+    return `<div class="ing-row">
+      <div>
+        <span>${f.nombre}</span> <span style="color:var(--parchment-faint);font-size:10.5px">${pct}%</span>
+        <div class="ing-track"><div class="ing-fill" style="width:${(f.valor/max*100).toFixed(0)}%;background:${c}"></div></div>
+      </div>
+      <div class="ing-amt">${fmt(f.valor)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAreas(){
+  const cont = $('areas-container');
+  let html = '';
+  Object.entries(ER.areas).forEach(([areaNombre, info], areaIdx) => {
+    const areaId = 'area-'+areaIdx;
+    const areaTotal = sumaSerie(info.total);
+    const filasMin = info.ministerios.map((m,i)=>({...m, valor: sumaSerie(m.valores)}))
+      .sort((a,b)=>b.valor-a.valor);
+    const abierta = ministerioSel && filasMin.some(m=>String(m.codigo)===String(ministerioSel));
+    const maxVal = Math.max(...filasMin.map(f=>f.valor), 1);
+
+    html += `<div class="area-block">
+      <div class="area-head" onclick="toggleArea('${areaId}')">
+        <div class="area-head-l">
+          <span class="area-toggle ${abierta?'open':''}" id="tog-${areaId}">▶</span>
+          <span class="area-name">${tituloCase(areaNombre)}</span>
+        </div>
+        <span class="area-total num">${fmt(areaTotal)}</span>
+      </div>
+      <div class="area-rows ${abierta?'open':''}" id="rows-${areaId}">
+        ${filasMin.map((m,i)=>{
+          const pctArea = areaTotal>0 ? (m.valor/areaTotal*100) : 0;
+          const barW = maxVal>0 ? (m.valor/maxVal*100) : 0;
+          return `<div class="min-row ${String(ministerioSel)===String(m.codigo)?'sel':''}" onclick="seleccionarMinisterio(${m.codigo})">
+            <div class="min-idx">${String(i+1).padStart(2,'0')}</div>
+            <div class="min-name">${tituloCase(m.nombre)}
+              <div class="min-track"><div class="min-fill" style="width:${barW}%"></div></div>
+            </div>
+            <div class="min-amt">${fmt(m.valor)}</div>
+            <div class="min-pct" style="color:var(--parchment-faint); font-weight:500">${pctArea.toFixed(0)}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  cont.innerHTML = html;
+}
+
+function toggleArea(id){
+  $('rows-'+id).classList.toggle('open');
+  $('tog-'+id).classList.toggle('open');
+}
+
+function seleccionarMinisterio(codigo){
+  ministerioSel = codigo;
+  renderDetalle();
+  $('sec-detalle').style.display = '';
+  $('sec-detalle').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function buscarMinisterio(codigo){
+  for (const [areaNombre, info] of Object.entries(ER.areas)){
+    const m = info.ministerios.find(x=>String(x.codigo)===String(codigo));
+    if (m) return {...m, area:areaNombre};
+  }
+  return null;
+}
+
+function renderDetalle(){
+  const m = buscarMinisterio(ministerioSel);
+  if (!m) return;
+  const real = sumaSerie(m.valores);
+
+  $('detalle-title-top').textContent = tituloCase(m.nombre);
+  $('det-nombre').textContent = tituloCase(m.nombre);
+  $('det-area').textContent = tituloCase(m.area) + ' · Cuenta ' + m.codigo;
+  $('det-real').textContent = fmt2(real);
+
+  const el = $('chart-detalle-mensual');
+  if (detalleChart) detalleChart.destroy();
+  if (el){
+    detalleChart = new Chart(el.getContext('2d'), {
+      type:'bar',
+      data:{ labels:MESES, datasets:[{label:'Gasto real', data:m.valores, backgroundColor:COL_GREEN, borderRadius:4, barPercentage:.6}] },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:{duration:400},
+        scales:{ x:{grid:{display:false}, ticks:{font:{size:11}}}, y:{grid:{color:'rgba(15,23,42,.07)'}, ticks:{font:{size:10}, callback:v=>'$'+v.toLocaleString()}} },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${fmt2(ctx.raw)}` } } }
+      }
+    });
+  }
+
+  renderSubcuentas(m.codigo);
+}
+
+let subAbierto = {};
+
+function renderSubcuentas(codigo){
+  const cont = $('det-subcuentas');
+  if (!cont) return;
+  const info = ER.subcuentas_admin && ER.subcuentas_admin[String(codigo)];
+  if (!info){ cont.innerHTML=''; return; }
+
+  let html = `<div class="chart-box-t" style="margin:1.4rem 0 .8rem">De dónde sale este número — desglose por sub-cuenta (Ene-Sep)</div>
+    <div class="sub-block">
+      <div class="sub-head"><span>Sub-cuenta</span><span>${MESES[MESES.length-1]}</span><span>Acumulado</span></div>`;
+  info.subcuentas.sort((a,b)=>b.acumulado-a.acumulado).forEach((s,i)=>{
+    const id = codigo+'-'+i;
+    const abierto = !!subAbierto[id];
+    const tieneHijos = s.hijos && s.hijos.length>0;
+    html += `<div class="sub-row" onclick="${tieneHijos?`toggleSub('${id}')`:''}">
+      <div class="sub-row-nombre">${tieneHijos?`<span class="sub-toggle ${abierto?'open':''}" id="tog-${id}">▶</span>`:'<span style="width:9px;display:inline-block"></span>'}${s.nombre}</div>
+      <div class="sub-row-val">${fmt(s.ultimo)}</div>
+      <div class="sub-row-val acum">${fmt(s.acumulado)}</div>
+    </div>`;
+    if (tieneHijos){
+      html += `<div class="sub-hijos ${abierto?'open':''}" id="hijos-${id}">`;
+      s.hijos.forEach(h=>{
+        html += `<div class="sub-hijo"><div>${h.nombre}</div><div class="sub-hijo-val">${fmt(h.ultimo||0)}</div><div class="sub-hijo-val">${fmt(h.acumulado)}</div></div>`;
+      });
+      html += `</div>`;
+    }
+  });
+  const totalAcum = info.subcuentas.reduce((s,x)=>s+x.acumulado,0);
+  const totalUlt = info.subcuentas.reduce((s,x)=>s+x.ultimo,0);
+  html += `<div class="sub-row" style="cursor:default;background:var(--panel2);font-weight:700">
+      <div class="sub-row-nombre"><span style="width:9px;display:inline-block"></span>Total</div>
+      <div class="sub-row-val">${fmt(totalUlt)}</div>
+      <div class="sub-row-val acum">${fmt(totalAcum)}</div>
+    </div>`;
+  html += `</div>`;
+  cont.innerHTML = html;
+}
+
+function toggleSub(id){
+  subAbierto[id] = !subAbierto[id];
+  renderSubcuentas(ministerioSel);
+}
+
+function tituloCase(s){
+  return s.trim().toLowerCase().replace(/(?:^|\s)\S/g, c => c.toUpperCase());
+}
+
+// ================================================================
+// PESTAÑA PRESUPUESTO
+// ================================================================
+function getRenglonesPresupuesto(){
+  const porCodigo = {};
+  Object.entries(ER.areas).forEach(([areaNombre, info]) => {
+    info.ministerios.forEach(m => {
+      const cod = m.presupuesto_codigo;
+      if (!cod) return;
+      if (!porCodigo[cod]) {
+        porCodigo[cod] = {
+          codigo: cod,
+          nombre: cod==='20' ? 'Área Administrativa (agregado)' : (m.presupuesto_nombre || tituloCase(m.nombre)),
+          area: areaNombre,
+          valores: [0,0,0,0,0,0],
+          presupuesto_anual: m.presupuesto_anual || 0,
+          esAdmin: cod==='20',
+          cuentas: []
+        };
+      }
+      porCodigo[cod].valores = porCodigo[cod].valores.map((v,i)=>v+(m.valores[i]||0));
+      porCodigo[cod].cuentas.push(tituloCase(m.nombre));
+    });
+  });
+  return Object.values(porCodigo);
+}
+
+function presupuestoSerieGlobal(codigo){
+  const arr = (ER.presupuesto_mensual && ER.presupuesto_mensual[codigo]) || [0,0,0,0,0,0];
+  return sumaSerie(arr);
+}
+
+function estadoPresupuesto(pres, real){
+  if (pres<=0 && real>0) return {color:COL_AMBER, label:'Sin presupuesto', tag:'tag-amber'};
+  if (pres<=0) return {color:'#9db3a5', label:'Sin movimiento', tag:'tag-gray'};
+  const pct = real/pres*100;
+  if (pct>100) return {color:COL_RUST, label:'Sobre-ejecutado', tag:'tag-rust', pct};
+  if (pct>=80) return {color:COL_AMBER, label:'Por agotarse', tag:'tag-amber', pct};
+  return {color:COL_GREEN, label:'OK', tag:'tag-green', pct};
+}
+
+let ppTendenciaChart=null, ppDetalleChart=null;
+
+function renderPresupuestoTab(){
+  const renglones = getRenglonesPresupuesto();
+  let totalPres=0, totalReal=0, nSobre=0, nConPres=0;
+  const filas = renglones.map(r => {
+    const pres = presupuestoSerieGlobal(r.codigo);
+    const real = sumaSerie(r.valores);
+    totalPres += pres; totalReal += real;
+    if (pres>0){ nConPres++; if (real>pres) nSobre++; }
+    return {...r, pres, real};
+  }).sort((a,b)=>{
+    const pa = a.pres>0 ? a.real/a.pres : (a.real>0?999:-1);
+    const pb = b.pres>0 ? b.real/b.pres : (b.real>0?999:-1);
+    return pb-pa;
+  });
+
+  const periodoTxt = mesSel===null ? ('Ene–'+MESES[MESES.length-1]+' (todo 2026)') : MESES[mesSel];
+  const disp = totalPres - totalReal;
+  $('pp-kpi-pres').textContent = fmt(totalPres);
+  $('pp-kpi-pres-note').textContent = periodoTxt;
+  $('pp-kpi-real').textContent = fmt(totalReal);
+  $('pp-kpi-real-note').textContent = (totalPres>0?(totalReal/totalPres*100).toFixed(0):'0')+'% del presupuesto del período';
+  $('pp-kpi-disp').textContent = fmt(disp);
+  $('pp-kpi-disp').className = 'kpi-v num ' + (disp>=0?'green':'rust');
+  $('pp-kpi-disp-note').textContent = disp>=0?'Dentro del presupuesto':'Sobre-ejecutado';
+  $('pp-kpi-sobre').textContent = nSobre;
+  $('pp-kpi-sobre-note').textContent = `de ${nConPres} ministerios con presupuesto`;
+
+  renderPPTendencia();
+  renderPPRanking(filas);
+  renderPPAlertas(filas);
+  if (ppMinisterioSel) renderPPDetalle();
+}
+
+function renderPPTendencia(){
+  const el = $('pp-chart-tendencia'); if(!el) return;
+  const renglones = getRenglonesPresupuesto();
+  let acumPres=0, acumReal=0;
+  const presAcum=[], realAcum=[];
+  MESES.forEach((_,idx)=>{
+    let p=0, r=0;
+    renglones.forEach(rg=>{
+      p += (ER.presupuesto_mensual[rg.codigo]||[])[idx] || 0;
+      r += rg.valores[idx] || 0;
+    });
+    acumPres+=p; acumReal+=r;
+    presAcum.push(Math.round(acumPres*100)/100);
+    realAcum.push(Math.round(acumReal*100)/100);
+  });
+  if (ppTendenciaChart) ppTendenciaChart.destroy();
+  ppTendenciaChart = new Chart(el.getContext('2d'), {
+    type:'line',
+    data:{
+      labels: MESES,
+      datasets:[
+        {label:'Presupuesto acumulado', data:presAcum, borderColor:COL_GOLDSOFT, backgroundColor:'rgba(91,124,240,.09)', fill:true, tension:.35, pointRadius:3, pointBackgroundColor:COL_GOLDSOFT, borderWidth:2},
+        {label:'Ejecutado acumulado', data:realAcum, borderColor:COL_GREEN, backgroundColor:'rgba(15,157,88,.10)', fill:true, tension:.35, pointRadius:3, pointBackgroundColor:COL_GREEN, borderWidth:2},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:500}, interaction:{mode:'index',intersect:false},
+      scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{grid:{color:'rgba(15,23,42,.07)'},ticks:{font:{size:10},callback:v=>'$'+v.toLocaleString()}} },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt2(ctx.raw)}` } } }
+    }
+  });
+}
+
+function renderPPRanking(filas){
+  $('pp-rank-list').innerHTML = filas.map((f,i)=>{
+    const est = estadoPresupuesto(f.pres, f.real);
+    const barW = f.pres>0 ? Math.min(f.real/f.pres*100,100) : (f.real>0?100:0);
+    const pctTxt = f.pres>0 ? est.pct.toFixed(0)+'%' : '—';
+    return `<div class="min-row ${String(ppMinisterioSel)===String(f.codigo)?'sel':''}" onclick="ppSeleccionar('${f.codigo}')" style="cursor:pointer">
+      <div class="min-idx">${String(i+1).padStart(2,'0')}</div>
+      <div class="min-name">${f.nombre}<span class="tag ${est.tag} sm" style="margin-top:3px">${est.label}</span></div>
+      <div class="min-amt">${fmt(f.real)}<span class="lbl">Real</span></div>
+      <div class="min-amt" style="color:var(--gold-soft)">${f.pres>0?fmt(f.pres):'—'}<span class="lbl">Presup.</span></div>
+      <div class="min-pct" style="color:${est.color}">${pctTxt}</div>
+    </div>`;
+  }).join('');
+
+  const sel = $('pp-select-min');
+  if (sel){
+    const actual = sel.value;
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+      filas.map(f=>`<option value="${f.codigo}" ${String(ppMinisterioSel)===String(f.codigo)?'selected':''}>${f.nombre}</option>`).join('');
+  }
+}
+
+function ppSeleccionar(codigo){
+  ppMinisterioSel = codigo;
+  renderPPRanking(getRenglonesPresupuesto().map(r=>({...r, pres:presupuestoSerieGlobal(r.codigo), real:sumaSerie(r.valores)})).sort((a,b)=>{
+    const pa = a.pres>0?a.real/a.pres:(a.real>0?999:-1), pb = b.pres>0?b.real/b.pres:(b.real>0?999:-1);
+    return pb-pa;
+  }));
+  renderPPDetalle();
+  $('pp-sec-detalle').style.display = '';
+  $('pp-sec-detalle').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderPPDetalle(){
+  const renglones = getRenglonesPresupuesto();
+  const r = renglones.find(x=>String(x.codigo)===String(ppMinisterioSel));
+  if (!r) return;
+  const acumEneJun = r.valores.reduce((s,v)=>s+v,0);
+  const presMensual = ER.presupuesto_mensual[r.codigo] || null;
+
+  $('pp-detalle-title-top').textContent = r.nombre;
+  $('pp-det-nombre').textContent = r.nombre;
+  $('pp-det-area').textContent = r.esAdmin ? ('Cuentas: ' + r.cuentas.join(' + ')) : tituloCase(r.area);
+  $('pp-det-real').textContent = fmt2(acumEneJun);
+  $('pp-det-pres').textContent = r.presupuesto_anual>0 ? fmt2(r.presupuesto_anual) : '—';
+
+  if (r.esAdmin){
+    $('pp-det-pct').textContent = '—';
+    $('pp-det-nota').style.display = '';
+    $('pp-det-nota').textContent = 'Este renglón agrupa las cuentas de "Gestión Litúrgica" y "Administración y Mantenimiento", que juntas comparten la bolsa de $247,778.39 de Área Administrativa para todo 2026 — la cifra más completa que tenemos de ese presupuesto compartido.';
+  } else if (r.presupuesto_anual>0){
+    const pct = acumEneJun/r.presupuesto_anual*100;
+    $('pp-det-pct').textContent = pct.toFixed(0)+'%';
+    $('pp-det-pct').style.color = pct>60?COL_RUST:(pct>=40?COL_AMBER:COL_GREEN);
+    $('pp-det-nota').style.display = 'none';
+  } else {
+    $('pp-det-pct').textContent = '—';
+    $('pp-det-nota').style.display = '';
+    $('pp-det-nota').textContent = 'Esta comisión todavía no tiene presupuesto anual asignado para 2026.';
+  }
+
+  const el = $('pp-chart-detalle-mensual');
+  if (ppDetalleChart) ppDetalleChart.destroy();
+  if (el){
+    const datasets = [{label:'Ejecutado', data:r.valores, backgroundColor:COL_GREEN, borderRadius:4, barPercentage:.6}];
+    if (presMensual) datasets.unshift({label:'Presupuesto', data:presMensual.slice(0,6), backgroundColor:'rgba(200,151,63,.4)', borderRadius:4, barPercentage:.6});
+    ppDetalleChart = new Chart(el.getContext('2d'), {
+      type:'bar', data:{labels:MESES, datasets},
+      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:400},
+        scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{grid:{color:'rgba(15,23,42,.07)'},ticks:{font:{size:10},callback:v=>'$'+v.toLocaleString()}} },
+        plugins:{ legend:{display:!!presMensual, position:'top', align:'end', labels:{boxWidth:9,boxHeight:9,font:{size:10.5},usePointStyle:true,pointStyle:'rect'}}, tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmt2(ctx.raw)}`}} }
+      }
+    });
+  }
+
+  // Reutiliza la misma tabla de variación mensual, en el contenedor pp-det-variacion
+  const cont = $('pp-det-variacion');
+  if (!presMensual){ cont.innerHTML=''; }
+  else {
+    let html = `<div class="chart-box-t" style="margin:1.4rem 0 .8rem">Presupuesto vs. ejecutado, mes a mes</div>
+      <div style="overflow-x:auto"><table class="var-tbl">
+      <thead><tr><th>Mes</th><th class="r">Presupuesto</th><th class="r">Real</th><th class="r">Variación</th><th class="r">%</th></tr></thead><tbody>`;
+    let totPres=0, totReal=0;
+    MESES.forEach((mes,i)=>{
+      const p = presMensual[i]||0, real = r.valores[i]||0, v = p-real;
+      totPres+=p; totReal+=real;
+      const pctEj = p>0 ? (real/p*100) : (real>0?999:0);
+      html += `<tr><td>${mes}</td><td class="r">${fmt(p)}</td><td class="r">${fmt(real)}</td>
+        <td class="r" style="color:${v>=0?'var(--green)':'var(--rust)'}">${v>=0?'+':''}${fmt(v)}</td>
+        <td class="r" style="color:${pctEj>100?'var(--rust)':(pctEj>=80?'var(--amber)':'var(--green)')}">${p>0?pctEj.toFixed(0)+'%':'—'}</td></tr>`;
+    });
+    const varAcum = totPres-totReal;
+    const pendiente = (r.presupuesto_anual||0) - acumEneJun;
+    html += `<tr class="var-tot"><td>Acumulado Ene-Jun</td><td class="r">${fmt(totPres)}</td><td class="r">${fmt(totReal)}</td>
+      <td class="r" style="color:${varAcum>=0?'var(--green)':'var(--rust)'}">${varAcum>=0?'+':''}${fmt(varAcum)}</td>
+      <td class="r">${totPres>0?(totReal/totPres*100).toFixed(0)+'%':'—'}</td></tr>`;
+    html += `</tbody></table></div>
+      <div style="display:flex;gap:1.6rem;margin-top:1rem;flex-wrap:wrap">
+        <div><div class="dm-v num" style="font-size:15px;color:var(--gold-soft)">${fmt(r.presupuesto_anual)}</div><div class="dm-l">Presupuesto anual 2026</div></div>
+        <div><div class="dm-v num" style="font-size:15px">${fmt(pendiente)}</div><div class="dm-l">Pendiente por ejecutar (resto del año)</div></div>
+      </div>`;
+    cont.innerHTML = html;
+  }
+}
+
+function renderPPAlertas(filas){
+  const cont = $('pp-alertas');
+  if (!cont) return;
+  const sobre = filas.filter(f=>f.pres>0 && f.real>f.pres).sort((a,b)=>(b.real-b.pres)-(a.real-a.pres)).slice(0,4);
+  const sinTocar = filas.filter(f=>f.pres>0 && f.real===0);
+  const sinPresupuesto = filas.filter(f=>!f.pres && f.real>0);
+
+  const bloque = (titulo, color, items, render) => `
+    <div class="chart-box">
+      <div class="chart-box-t" style="color:${color}">${titulo}</div>
+      ${items.length ? items.map(render).join('') : '<div style="font-size:12px;color:var(--parchment-faint)">Ninguno por el momento.</div>'}
+    </div>`;
+
+  cont.innerHTML =
+    bloque('⚠ Mayor sobre-ejecución', 'var(--rust)', sobre, f =>
+      `<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--line);font-size:12.5px">
+        <span>${f.nombre}</span><span class="num" style="color:var(--rust)">+${fmt(f.real-f.pres)}</span>
+      </div>`) +
+    bloque('Con presupuesto asignado, sin ejecutar aún', 'var(--amber)', sinTocar, f =>
+      `<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--line);font-size:12.5px">
+        <span>${f.nombre}</span><span class="num" style="color:var(--gold-soft)">${fmt(f.pres)}</span>
+      </div>`);
+}
+
+let porMesAbierto = { ingresos:false, gastos:false, areas:{} };
+
+function renderPorMes(){
+  const cont = $('madre-table');
+  const gridCols = MESES.length; // 6
+
+  // ===== INGRESOS =====
+  const ingPorMes = MESES.map((_,idx)=>ER.ingresos.reduce((s,i)=>s+i.valores[idx],0));
+  const ingTotal = ingPorMes.reduce((s,v)=>s+v,0);
+
+  let html = `<div class="mt-head">
+    <span>Cuenta</span>${MESES.map(m=>`<span>${m}</span>`).join('')}<span>Total</span>
+  </div>`;
+
+  html += `<div class="mt-madre ${porMesAbierto.ingresos?'open':''}" onclick="toggleMadre('ingresos')">
+    <div class="mt-madre-nombre"><span class="mt-toggle ${porMesAbierto.ingresos?'open':''}">▶</span>INGRESOS</div>
+    ${ingPorMes.map(v=>`<div class="mt-val">${fmt(v)}</div>`).join('')}
+    <div class="mt-val tot">${fmt(ingTotal)}</div>
+  </div>`;
+  html += `<div class="mt-rows ${porMesAbierto.ingresos?'open':''}" id="rows-ingresos">`;
+  ER.ingresos.filter(i=>i.valores.some(v=>v>0)).forEach(i=>{
+    const tot = i.valores.reduce((s,v)=>s+v,0);
+    html += `<div class="mt-hijo">
+      <div class="mt-hijo-nombre">${i.nombre}</div>
+      ${i.valores.map(v=>`<div class="mt-hijo-val">${v>0?fmt(v):'—'}</div>`).join('')}
+      <div class="mt-hijo-val tot">${fmt(tot)}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ===== GASTOS =====
+  const gasPorMes = MESES.map((_,idx)=>Object.values(ER.areas).reduce((s,a)=>s+a.total[idx],0));
+  const gasTotal = gasPorMes.reduce((s,v)=>s+v,0);
+
+  html += `<div class="mt-madre ${porMesAbierto.gastos?'open':''}" onclick="toggleMadre('gastos')">
+    <div class="mt-madre-nombre"><span class="mt-toggle ${porMesAbierto.gastos?'open':''}">▶</span>GASTOS</div>
+    ${gasPorMes.map(v=>`<div class="mt-val">${fmt(v)}</div>`).join('')}
+    <div class="mt-val tot">${fmt(gasTotal)}</div>
+  </div>`;
+  html += `<div class="mt-rows ${porMesAbierto.gastos?'open':''}" id="rows-gastos">`;
+  Object.entries(ER.areas).forEach(([areaNombre, info], areaIdx) => {
+    const areaId = 'area'+areaIdx;
+    const abiertaArea = !!porMesAbierto.areas[areaId];
+    html += `<div class="mt-area" onclick="event.stopPropagation(); toggleAreaPorMes('${areaId}')">
+      <div class="mt-area-nombre"><span class="mt-toggle ${abiertaArea?'open':''}" id="tog-${areaId}">▶</span>${tituloCase(areaNombre)}</div>
+      ${info.total.map(v=>`<div class="mt-area-val">${fmt(v)}</div>`).join('')}
+      <div class="mt-area-val tot">${fmt(info.total.reduce((s,v)=>s+v,0))}</div>
+    </div>`;
+    html += `<div class="mt-nieto-rows ${abiertaArea?'open':''}" id="nieto-${areaId}">`;
+    info.ministerios.filter(m=>m.valores.some(v=>v>0)).forEach(m=>{
+      const totM = m.valores.reduce((s,v)=>s+v,0);
+      html += `<div class="mt-nieto">
+        <div class="mt-nieto-nombre">${tituloCase(m.nombre)}</div>
+        ${m.valores.map(v=>`<div class="mt-nieto-val">${v>0?fmt(v):'—'}</div>`).join('')}
+        <div class="mt-nieto-val tot">${fmt(totM)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // ===== RESULTADO =====
+  const resPorMes = MESES.map((_,idx)=>ingPorMes[idx]-gasPorMes[idx]);
+  html += `<div class="mt-madre" style="cursor:default;background:var(--panel2)" onclick="event.stopPropagation()">
+    <div class="mt-madre-nombre" style="color:var(--parchment)"><span style="width:11px;display:inline-block"></span>RESULTADO DEL PERÍODO</div>
+    ${resPorMes.map(v=>`<div class="mt-val tot" style="color:${v>=0?'#46b57e':'#c1512f'}">${(v>=0?'+':'')+fmt(v)}</div>`).join('')}
+    <div class="mt-val tot" style="color:${(ingTotal-gasTotal)>=0?'#46b57e':'#c1512f'}">${((ingTotal-gasTotal)>=0?'+':'')+fmt(ingTotal-gasTotal)}</div>
+  </div>`;
+
+  cont.innerHTML = html;
+}
+
+function toggleMadre(cual){
+  porMesAbierto[cual] = !porMesAbierto[cual];
+  renderPorMes();
+}
+function toggleAreaPorMes(areaId){
+  porMesAbierto.areas[areaId] = !porMesAbierto.areas[areaId];
+  renderPorMes();
+}
+
+let diezmosChart=null;
+function renderDiezmos(){
+  if (!ER.diezmos) return;
+  const com = ER.diezmos.comunidad, ofi = ER.diezmos.oficial;
+  const totalCom = com.reduce((s,v)=>s+v,0), totalOfi = ofi.reduce((s,v)=>s+v,0);
+  const diff = totalCom - totalOfi;
+  const mesesConDif = com.filter((v,i)=>Math.abs(v-ofi[i])>1).length;
+
+  $('dz-comunidad').textContent = fmt(totalCom);
+  $('dz-oficial').textContent = fmt(totalOfi);
+  $('dz-diff').textContent = (diff>=0?'+':'') + fmt(diff);
+  $('dz-diff-pct').textContent = (diff/totalOfi*100).toFixed(1)+'% sobre lo contabilizado';
+  $('dz-meses').textContent = mesesConDif + ' / ' + com.length;
+
+  const el = $('chart-diezmos');
+  if (diezmosChart) diezmosChart.destroy();
+  if (el){
+    diezmosChart = new Chart(el.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: MESES,
+        datasets:[
+          {label:'Informe comunidades', data:com, backgroundColor:'rgba(91,124,240,.55)', borderRadius:4, barPercentage:.7},
+          {label:'Libros oficiales', data:ofi, backgroundColor:'rgba(15,23,42,.14)', borderRadius:4, barPercentage:.7},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:{duration:500},
+        scales:{
+          x:{ grid:{display:false}, ticks:{font:{size:11.5}} },
+          y:{ grid:{color:'rgba(15,23,42,.07)'}, ticks:{font:{size:10.5}, callback:v=>'$'+v.toLocaleString()} }
+        },
+        plugins:{
+          legend:{display:false},
+          tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt2(ctx.raw)}` } }
+        }
+      }
+    });
+  }
+}
+
+// ================================================================
+// DESCARGA DE EXCEL PARA PUBLICAR (mismo formato "EF_MMYYYY", con estilo completo vía ExcelJS)
+// ================================================================
+const NOMBRES_MES_LARGO = {'Ene':'ENERO','Feb':'FEBRERO','Mar':'MARZO','Abr':'ABRIL','May':'MAYO','Jun':'JUNIO','Jul':'JULIO','Ago':'AGOSTO','Sep':'SEPTIEMBRE','Oct':'OCTUBRE','Nov':'NOVIEMBRE','Dic':'DICIEMBRE'};
+const FMT_MONEY = '_-[$$-440A]* #,##0.00_ ;_-[$$-440A]* \\-#,##0.00\\ ;_-[$$-440A]* "-"??_ ;_-@_ ';
+const FMT_TOTAL = '"$"#,##0.00';
+const FMT_TOTAL_NEG = '"$"#,##0.00;[Red]\\-"$"#,##0.00';
+
+function nombreHojaMes(i){
+  return String(i+1).padStart(2,'0') + '-' + MESES[i] + '26';
+}
+
+function construirHojaMes(wb, idx){
+  const ws = wb.addWorksheet(nombreHojaMes(idx));
+  ws.columns = [{width:8},{width:58},{width:20},{width:20},{width:20}];
+  ws.views = [{showGridLines:false}];
+
+  ws.mergeCells('A1:E1');
+  ws.getCell('A1').value = 'PARROQUIA CRISTO REDENTOR';
+  ws.getCell('A1').font = {name:'Calibri', size:14, bold:true};
+  ws.getCell('A1').alignment = {horizontal:'center'};
+
+  ws.mergeCells('A2:E2');
+  ws.getCell('A2').value = `ESTADO DE RESULTADOS  DE ${NOMBRES_MES_LARGO[MESES[idx]]} 2026`;
+  ws.getCell('A2').font = {name:'Calibri', size:12, bold:true};
+  ws.getCell('A2').alignment = {horizontal:'center'};
+
+  ws.mergeCells('A3:E3');
+  ws.getCell('A3').value = '(Expresado en Dólares de los Estados Unidos de América)';
+  ws.getCell('A3').font = {name:'Calibri', size:12};
+  ws.getCell('A3').alignment = {horizontal:'center'};
+
+  let row = 6;
+  const filaIngIni = row;
+  ws.getCell(`B${row}`).value = 'INGRESOS';
+  ws.getCell(`B${row}`).font = {name:'Arial', size:10, bold:true};
+  row++;
+  const inicioIng = row;
+  ER.ingresos.forEach((item) => {
+    const v = Math.round((item.valores[idx]||0)*100)/100;
+    if (v===0) return;
+    const idxItem = ER.ingresos.indexOf(item) + 1;
+    ws.getCell(`A${row}`).value = idxItem;
+    ws.getCell(`A${row}`).font = {name:'Arial', size:9};
+    ws.getCell(`A${row}`).numFmt = '0';
+    ws.getCell(`B${row}`).value = item.nombre;
+    ws.getCell(`B${row}`).font = {name:'Arial', size:10};
+    ws.getCell(`C${row}`).value = v;
+    ws.getCell(`C${row}`).font = {name:'Arial', size:10};
+    ws.getCell(`C${row}`).numFmt = FMT_MONEY;
+    row++;
+  });
+  const finIng = row - 1;
+  ws.getCell(`E${filaIngIni}`).value = { formula: `SUM(C${inicioIng}:C${finIng})` };
+  ws.getCell(`E${filaIngIni}`).font = {name:'Aptos Narrow', size:11, bold:true};
+  ws.getCell(`E${filaIngIni}`).numFmt = FMT_TOTAL;
+
+  row++;
+  ws.getCell(`B${row}`).value = 'menos:';
+  ws.getCell(`B${row}`).font = {name:'Arial', size:10};
+  row++;
+  const filaGasIni = row;
+  ws.getCell(`B${row}`).value = 'GASTOS DE OPERACIÓN';
+  ws.getCell(`B${row}`).font = {name:'Arial', size:10, bold:true};
+  row += 2;
+
+  const filasSubtotal = [];
+  Object.entries(ER.areas).forEach(([areaNombre, info]) => {
+    const filaArea = row;
+    ws.getCell(`B${row}`).value = areaNombre;
+    ws.getCell(`B${row}`).font = {name:'Arial', size:10, bold:true};
+    row++;
+    const inicioArea = row;
+    info.ministerios.forEach(m => {
+      const v = Math.round((m.valores[idx]||0)*100)/100;
+      if (v===0) return;
+      ws.getCell(`A${row}`).value = m.codigo;
+      ws.getCell(`A${row}`).font = {name:'Arial', size:9};
+      ws.getCell(`A${row}`).numFmt = '0';
+      ws.getCell(`B${row}`).value = tituloCase(m.nombre);
+      ws.getCell(`B${row}`).font = {name:'Arial', size:10};
+      ws.getCell(`C${row}`).value = v;
+      ws.getCell(`C${row}`).font = {name:'Arial', size:10};
+      ws.getCell(`C${row}`).numFmt = FMT_MONEY;
+      row++;
+    });
+    const finArea = row - 1;
+    if (finArea >= inicioArea) ws.getCell(`D${filaArea}`).value = { formula: `SUM(C${inicioArea}:C${finArea})` };
+    else ws.getCell(`D${filaArea}`).value = 0;
+    ws.getCell(`D${filaArea}`).font = {name:'Arial', size:10, bold:true};
+    ws.getCell(`D${filaArea}`).numFmt = FMT_MONEY;
+    filasSubtotal.push(filaArea);
+    row++;
+  });
+
+  const refsGastos = filasSubtotal.map(r => `D${r}`).join('+');
+  ws.getCell(`E${filaGasIni}`).value = { formula: refsGastos };
+  ws.getCell(`E${filaGasIni}`).font = {name:'Aptos Narrow', size:11, bold:true};
+  ws.getCell(`E${filaGasIni}`).numFmt = FMT_TOTAL;
+
+  const filaRes = row;
+  ws.getCell(`B${filaRes}`).value = 'UTILIDAD (-PERDIDA) DE OPERACION';
+  ws.getCell(`B${filaRes}`).font = {name:'Arial', size:10, bold:true};
+  ws.getCell(`E${filaRes}`).value = { formula: `E${filaIngIni}-E${filaGasIni}` };
+  ws.getCell(`E${filaRes}`).font = {name:'Aptos Narrow', size:11, bold:true};
+  ws.getCell(`E${filaRes}`).numFmt = FMT_TOTAL_NEG;
+}
+
+async function descargarExcel(){
+  const wb = new ExcelJS.Workbook();
+  MESES.forEach((_, idx) => construirHojaMes(wb, idx));
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/octet-stream'});
+  let dl = null;
+  try { dl = (window.claude && claude.use) ? await claude.use('downloads') : null; } catch(e){ dl = null; }
+  if (dl){
+    try { await dl.save({filename:'INFO_2026.xlsx', data: blob}); } catch(e){ /* el usuario canceló */ }
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'INFO_2026.xlsx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+$('foot-fecha').textContent = 'Generado ' + new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'long',year:'numeric'});
+renderMesPills();
+renderAll();
+renderDiezmos();
+(function(){
+  let best=null, bestVal=-1;
+  Object.values(ER.areas).forEach(info => info.ministerios.forEach(m=>{
+    const v = m.valores.reduce((s,x)=>s+x,0);
+    if (v>bestVal){ bestVal=v; best=m.codigo; }
+  }));
+  if (best) seleccionarMinisterio(best);
+})();
+</script>
+
+</body>
+</html>
+
