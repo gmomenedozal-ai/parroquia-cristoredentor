@@ -949,16 +949,38 @@ async function cargarDesdeSheets() {
     if (data && data.saldos && data.gastos && Object.keys(data.saldos).length > 0) {
       DATA = data;
       sheetsDisponible = true;
+      usarCopiaLocalSiEsMasCompleta();
       return true;
     }
-    // Sheet vacío todavía (antes de migrar) — seguir usando datos locales
-    sheetsDisponible = true;
+    // Sheets respondió sin datos o con error: usar la copia guardada en este navegador
+    console.log('Google Sheets no devolvió datos:', data && data.error);
+    sheetsDisponible = false;
+    usarCopiaLocalSiEsMasCompleta();
     return false;
   } catch (err) {
     console.log('No se pudo conectar a Google Sheets, usando datos locales:', err);
     sheetsDisponible = false;
+    usarCopiaLocalSiEsMasCompleta();
     return false;
   }
+}
+
+// Si la copia guardada en este navegador tiene más meses o más registros que lo cargado
+// (por ejemplo, porque Google Sheets falló o no se pudo sincronizar), se usa la copia local.
+// Así nunca se pierden de vista los meses guardados solo en el navegador.
+function usarCopiaLocalSiEsMasCompleta() {
+  try {
+    const local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (!local || !local.gastos || !local.saldos) return false;
+    const maxMes = d => Math.max(0, ...(d.gastos||[]).map(g => +g.mes||0), ...Object.keys(d.saldos||{}).map(Number));
+    const mL = maxMes(local), mD = maxMes(DATA);
+    if (mL > mD || (mL === mD && local.gastos.length > (DATA.gastos||[]).length)) {
+      DATA = local;
+      console.log('✓ Usando la copia guardada en este navegador (hasta el mes ' + mL + ')');
+      return true;
+    }
+  } catch (e) { console.log('No se pudo leer la copia local:', e); }
+  return false;
 }
 
 // Unificación de subcategorías de Energía: cada número de cuenta (NC) de CAESS queda con un solo nombre,
@@ -1907,7 +1929,7 @@ async function guardarMes() {
       valor:parseFloat(inputs[2].value)||0,
       cuenta:select.value,
       sub:getSubVal(row),
-      pdf:inputs[4]?.value.trim()||'',
+      pdf:(row.querySelector('input[placeholder="Nombre PDF"]')?.value||'').trim(),
     };
     if(g.desc || g.valor) DATA.gastos.push(g);
   });
