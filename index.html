@@ -372,6 +372,7 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
     <button class="tab act" onclick="showSec('resumen')">📊 Resumen</button>
     <button class="tab" onclick="showSec('categorias')">📂 Por categoría</button>
     <button class="tab" onclick="showSec('comprobantes')">🗂️ Comprobantes</button>
+    <button class="tab" onclick="showSec('buscar')">🔎 Buscar pagos</button>
     <button class="tab" onclick="showSec('comparativo')">📈 Comparativo anual</button>
     <button class="tab" onclick="showSec('presupuesto')">📋 Presupuesto</button>
     <button class="tab" onclick="showSec('cxp')">💳 Cuentas por pagar</button>
@@ -578,6 +579,40 @@ footer{text-align:center;padding:1.5rem;color:var(--txt3);font-size:11px;border-
           <th class="r">Monto</th><th>Comprobante</th>
         </tr></thead>
         <tbody id="doc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BUSCAR PAGOS (por tipo de gasto o proveedor) ===== -->
+<section class="sec" id="sec-buscar">
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-t">Buscar pagos por tipo de gasto o proveedor</div>
+    <div class="search-row" style="flex-wrap:wrap;gap:8px">
+      <input type="text" id="bp-q" placeholder="Escriba lo que busca: seguro vehículo, CAESS, Puramatic, Castañeda…" oninput="renderBuscar()" style="flex:2 1 280px">
+      <select id="bp-cuenta" onchange="bpCambiarCuenta()" style="flex:1 1 170px"><option value="">Todos los tipos de gasto</option></select>
+      <select id="bp-sub" onchange="renderBuscar()" style="flex:1 1 220px"><option value="">Todos los proveedores / sub-rubros</option></select>
+      <select id="bp-desde" onchange="renderBuscar()" title="Desde"></select>
+      <select id="bp-hasta" onchange="renderBuscar()" title="Hasta"></select>
+      <button class="tab" onclick="bpLimpiar()" style="border:1px solid var(--borde);border-radius:6px">Limpiar</button>
+      <button class="tab" onclick="bpExportar()" style="border:1px solid var(--borde);border-radius:6px">⬇ Excel (CSV)</button>
+    </div>
+    <div id="bp-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px"></div>
+  </div>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-t">Pagado por mes</div>
+    <div style="overflow-x:auto"><table class="ctbl" id="bp-meses"></table></div>
+  </div>
+  <div class="card">
+    <div class="card-t">Detalle de pagos <span class="cnt" id="bp-cnt" style="font-weight:400"></span></div>
+    <div class="tscroll">
+      <table class="tbl">
+        <thead><tr>
+          <th>Fecha</th><th>Mes</th><th>Concepto</th><th>Tipo de gasto</th><th>Proveedor / sub-rubro</th>
+          <th class="r">Monto</th><th>Comprobante</th>
+        </tr></thead>
+        <tbody id="bp-tbody"></tbody>
+        <tfoot id="bp-tfoot"></tfoot>
       </table>
     </div>
   </div>
@@ -3195,6 +3230,96 @@ function refrescarTodo() {
   if (id === 'presupuesto')   renderPresupuesto();
 }
 
+// ================================================================
+// BUSCAR PAGOS — por tipo de gasto (cuenta), proveedor (sub-rubro) o texto libre
+// ================================================================
+const bpNorm = t => String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const bpEsc = t => String(t||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// Fecha como DD/MM (algunas vienen de Sheets en formato ISO: 2026-07-29T06:00:00.000Z)
+function bpFecha(g) {
+  const f = String(g.fecha||'');
+  const iso = f.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) { const d = new Date(f); return isNaN(d) ? iso[3]+'/'+iso[2] : String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
+  return f;
+}
+function bpFechaOrden(g) {
+  const m = bpFecha(g).match(/^(\d{1,2})\/(\d{1,2})/);
+  return (+g.mes)*100 + (m ? +m[1] : 0);
+}
+function bpPrepararFiltros() {
+  const gs = DATA.gastos || [];
+  const selC = $('bp-cuenta'), cAct = selC.value;
+  const cuentas = [...new Set(gs.map(g => g.cuenta).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  selC.innerHTML = '<option value="">Todos los tipos de gasto</option>' + cuentas.map(c => `<option value="${bpEsc(c)}">${bpEsc(c)}</option>`).join('');
+  selC.value = cuentas.includes(cAct) ? cAct : '';
+  const meses = getMesesConDatos ? getMesesConDatos() : [...new Set(gs.map(g=>+g.mes))].sort((a,b)=>a-b);
+  const opts = (meses.length ? meses : [1]).map(m => `<option value="${m}">${MESES[m]}</option>`).join('');
+  const d = $('bp-desde'), h = $('bp-hasta'), dv = d.value, hv = h.value;
+  d.innerHTML = opts; h.innerHTML = opts;
+  d.value = dv && meses.includes(+dv) ? dv : String(meses[0]||1);
+  h.value = hv && meses.includes(+hv) ? hv : String(meses[meses.length-1]||1);
+  bpLlenarSubs();
+}
+function bpLlenarSubs() {
+  const c = $('bp-cuenta').value, selS = $('bp-sub'), sAct = selS.value;
+  const subs = [...new Set((DATA.gastos||[]).filter(g => !c || g.cuenta === c).map(g => g.sub).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  selS.innerHTML = '<option value="">Todos los proveedores / sub-rubros</option>' + subs.map(x => `<option value="${bpEsc(x)}">${bpEsc(x)}</option>`).join('');
+  selS.value = subs.includes(sAct) ? sAct : '';
+}
+function bpCambiarCuenta() { bpLlenarSubs(); renderBuscar(); }
+function bpLimpiar() { $('bp-q').value=''; $('bp-cuenta').value=''; bpLlenarSubs(); $('bp-sub').value=''; bpPrepararFiltros(); const d=$('bp-desde'); d.selectedIndex=0; const h=$('bp-hasta'); h.selectedIndex=h.options.length-1; renderBuscar(); }
+function bpFiltrados() {
+  const palabras = bpNorm($('bp-q').value).split(/\s+/).filter(Boolean);
+  const c = $('bp-cuenta').value, sb = $('bp-sub').value;
+  const desde = +$('bp-desde').value || 1, hasta = +$('bp-hasta').value || 12;
+  return (DATA.gastos||[]).filter(g => {
+    if (+g.mes < desde || +g.mes > hasta) return false;
+    if (c && g.cuenta !== c) return false;
+    if (sb && g.sub !== sb) return false;
+    if (!palabras.length) return true;
+    const t = bpNorm([g.desc, g.sub, g.cuenta, g.pdf, bpFecha(g)].join(' '));
+    return palabras.every(p => t.includes(p));
+  }).sort((a,b) => bpFechaOrden(a) - bpFechaOrden(b));
+}
+function renderBuscar() {
+  if (!$('bp-desde').options.length) bpPrepararFiltros();
+  const rows = bpFiltrados().filter(g => +g.valor);
+  const total = rows.reduce((t,g) => t + (+g.valor||0), 0);
+  const ult = rows[rows.length-1];
+  const kpi = (t,v,sub) => `<div class="kpi"><div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em">${t}</div><div style="font-size:20px;font-weight:600;margin-top:4px">${v}</div>${sub?`<div style="font-size:12px;color:var(--txt3);margin-top:2px">${sub}</div>`:''}</div>`;
+  $('bp-kpis').innerHTML =
+    kpi('Pagos encontrados', rows.length) +
+    kpi('Total pagado', fmt(total)) +
+    kpi('Promedio por pago', rows.length ? fmt(total/rows.length) : '—') +
+    kpi('Último pago', ult ? fmt(ult.valor) : '—', ult ? `${bpFecha(ult) ? bpFecha(ult) + ' · ' : ''}${MESES[+ult.mes]}` : '');
+  // Totales por mes
+  const porMes = {}; rows.forEach(g => porMes[+g.mes] = (porMes[+g.mes]||0) + (+g.valor||0));
+  const desde = +$('bp-desde').value || 1, hasta = +$('bp-hasta').value || 12, ms = [];
+  for (let m = desde; m <= hasta; m++) ms.push(m);
+  $('bp-meses').innerHTML = `<thead><tr>${ms.map(m=>`<th>${MESES3[m]}</th>`).join('')}<th>Total</th></tr></thead>
+    <tbody><tr>${ms.map(m=>`<td class="r">${porMes[m]?fmt(porMes[m]):'—'}</td>`).join('')}<td class="r"><b>${fmt(total)}</b></td></tr></tbody>`;
+  // Detalle
+  $('bp-cnt').textContent = rows.length ? `— ${rows.length} pago(s)` : '';
+  $('bp-tbody').innerHTML = rows.length ? rows.map(g => `<tr>
+      <td>${bpEsc(bpFecha(g))}</td><td>${MESES3[+g.mes]||''}</td>
+      <td>${bpEsc(g.desc)}</td><td>${bpEsc(g.cuenta)}</td><td>${bpEsc(g.sub)}</td>
+      <td class="r">${fmt(g.valor)}</td>
+      <td>${g.pdf ? `<button class="pdf-a" onclick="abrirPDF('${g.mes}','${bpEsc(g.pdf).replace(/'/g,"\\'")}')">📄 ${bpEsc(g.pdf.replace(/\.pdf$/i,''))}</button>` : '<span style="color:var(--txt3)">—</span>'}</td>
+    </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--txt3);padding:1.5rem">No hay pagos con esos filtros.</td></tr>`;
+  $('bp-tfoot').innerHTML = rows.length ? `<tr><td colspan="5" style="text-align:right;font-weight:600">Total</td><td class="r" style="font-weight:600">${fmt(total)}</td><td></td></tr>` : '';
+}
+function bpExportar() {
+  const rows = bpFiltrados().filter(g => +g.valor);
+  const q = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const csv = ['Fecha;Mes;Concepto;Tipo de gasto;Proveedor / sub-rubro;Monto;Comprobante']
+    .concat(rows.map(g => [bpFecha(g), MESES[+g.mes], g.desc, g.cuenta, g.sub, String((+g.valor).toFixed(2)).replace('.',','), g.pdf||''].map(q).join(';')))
+    .join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'Pagos_' + (bpNorm($('bp-q').value || $('bp-sub').value || $('bp-cuenta').value || 'todos').replace(/[^a-z0-9]+/g,'_').slice(0,40)) + '.csv';
+  a.click();
+}
+
 function showSec(id) {
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
@@ -3204,6 +3329,7 @@ function showSec(id) {
   if(id==='resumen')      renderDash();
   if(id==='categorias')   renderCategorias();
   if(id==='comprobantes') renderComprobantes();
+  if(id==='buscar')       { bpPrepararFiltros(); renderBuscar(); }
   if(id==='comparativo')  renderComparativo();
   if(id==='presupuesto')  renderPresupuesto();
   if(id==='cxp')          { becSincronizar(); renderCxp(); }
